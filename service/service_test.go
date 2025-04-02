@@ -1,4 +1,4 @@
-package store
+package service
 
 import (
 	"context"
@@ -7,31 +7,28 @@ import (
 	"os"
 	"testing"
 
+	"github.com/InstaUpload/user-management/store"
 	"github.com/InstaUpload/user-management/store/database"
 	"github.com/InstaUpload/user-management/types"
 	"github.com/InstaUpload/user-management/utils"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 )
-
-func PSting() {
-	log.Printf("Store package")
-}
-
-var MockStore Store
 
 func TestMain(m *testing.M) {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	fmt.Println("Hello from User Management System")
+	fmt.Println("Hello from User Management System Business Test.")
 	testDbConfig := types.DatabaseConfig{
-		User:         utils.GetEnvString("TESTDATABASEUSER", "user"),
-		Password:     utils.GetEnvString("TESTDATABASEPASSWORD", "user"),
-		Name:         utils.GetEnvString("TESTDATABASENAME", "user"),
-		MaxOpenConns: utils.GetEnvInt("TESTDATABASEOPENCONNS", 5),
-		MaxIdleConns: utils.GetEnvInt("TESTDATABASEIDLECONNS", 5),
-		MaxIdleTime:  utils.GetEnvString("TESTDATABASEIDLETIME", "1m"),
+		User:             utils.GetEnvString("TESTDATABASEUSER", "tester"),
+		Password:         utils.GetEnvString("TESTDATABASEPASSWORD", "user"),
+		Name:             utils.GetEnvString("TESTDATABASENAME", "userdb"),
+		MaxOpenConns:     utils.GetEnvInt("TESTDATABASEOPENCONNS", 5),
+		MaxIdleConns:     utils.GetEnvInt("TESTDATABASEIDLECONNS", 5),
+		MaxIdleTime:      utils.GetEnvString("TESTDATABASEIDLETIME", "1m"),
+		MigrationsFolder: "../migrations",
 	}
 	ctx := context.Background()
 	container, err := database.CreatePostgresContainer(ctx, &testDbConfig)
@@ -50,11 +47,9 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Can not create new database")
 	}
-	if err = db.Ping(); err != nil {
-		log.Fatal("Can not connect to database")
-	}
 	database.Setup(&testDbConfig)
-	MockStore = NewStore(db)
+	store.MockStore = store.NewStore(db)
+	validate = validator.New()
 	exitCode := m.Run()
 	database.KillPostgresContainer(container)
 	os.Exit(exitCode)

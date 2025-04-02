@@ -23,12 +23,13 @@ func main() {
 	}
 	// Setting up the database.
 	dbConfig := types.DatabaseConfig{
-		User:         utils.GetEnvString("DATABASEUSER", "user"),
-		Password:     utils.GetEnvString("DATABASEPASSWORD", "user"),
-		Name:         utils.GetEnvString("DATABASENAME", "user"),
-		MaxOpenConns: utils.GetEnvInt("DATABASEOPENCONNS", 5),
-		MaxIdleConns: utils.GetEnvInt("DATABASEIDLECONNS", 5),
-		MaxIdleTime:  utils.GetEnvString("DATABASEIDLETIME", "1m"),
+		User:             utils.GetEnvString("DATABASEUSER", "user"),
+		Password:         utils.GetEnvString("DATABASEPASSWORD", "user"),
+		Name:             utils.GetEnvString("DATABASENAME", "user"),
+		MaxOpenConns:     utils.GetEnvInt("DATABASEOPENCONNS", 5),
+		MaxIdleConns:     utils.GetEnvInt("DATABASEIDLECONNS", 5),
+		MaxIdleTime:      utils.GetEnvString("DATABASEIDLETIME", "1m"),
+		MigrationsFolder: "./migrations",
 	}
 	connectionString := fmt.Sprintf("postgres://%s:%s@localhost/%s?sslmode=disable", dbConfig.User, dbConfig.Password, dbConfig.Name)
 	log.Println(connectionString)
@@ -39,11 +40,11 @@ func main() {
 	}
 	defer db.Close()
 	// Setting up store.
-	userStore := store.NewStore(db)
+	dbStore := store.NewStore(db)
 	// Setting up service.
-	userService := service.NewService(&userStore)
+	grpcService := service.NewService(&dbStore)
 	// Setting up handler.
-	handler := NewHandler(&userService)
+	handler := NewHandler(&grpcService)
 	// Setting up grpc server.
 	grpcAddress := utils.GetEnvString("USERSERVICEADDRESS", "localhost:5003")
 	l, err := net.Listen("tcp", grpcAddress)

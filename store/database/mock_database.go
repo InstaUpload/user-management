@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -17,7 +18,7 @@ import (
 func Setup(dbConfig *types.DatabaseConfig) error {
 	// Do migrations in the database.
 	m, err := migrate.New(
-		"file://./migrations",
+		fmt.Sprintf("file://%s", dbConfig.MigrationsFolder),
 		dbConfig.GetConnectionString())
 	if err != nil {
 		log.Fatalf("Error in migrating %v", err)

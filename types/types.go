@@ -15,6 +15,7 @@ type DatabaseConfig struct {
 	MaxOpenConns     int
 	MaxIdleConns     int
 	MaxIdleTime      string
+	MigrationsFolder string
 }
 
 func (c *DatabaseConfig) GetConnectionString() string {
@@ -56,14 +57,18 @@ func (p *Password) ComparePassword() error {
 
 type UserPayload struct {
 	Id         int       `json:"id"`
-	Name       string    `json:"name"`
-	Email      string    `json:"email"`
-	Password   string    `json:"-"` // NOTE: I think this should be string since in payload we'll only get string password.
+	Name       string    `json:"name" validate:"required"`
+	Email      string    `json:"email" validate:"required,email"`
+	Password   string    `json:"-" validate:"required,gte=3"` // NOTE: I think this should be string since in payload we'll only get string password.
 	IsVerified bool      `json:"is_verified"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
 type User struct {
-	UserPayload
-	Password Password
+	Id         int       `json:"id"`
+	Name       string    `json:"name"`
+	Email      string    `json:"email"`
+	Password   Password  `json:"-"`
+	IsVerified bool      `json:"is_verified"`
+	CreatedAt  time.Time `json:"created_at"`
 }

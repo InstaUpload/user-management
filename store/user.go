@@ -21,9 +21,10 @@ func (s *UserStore) Create(ctx context.Context, user *types.User) error {
 		return err
 	}
 	// If user doesn't exist Insert user in database.
-	res := query.QueryRowContext(ctx, user.Name, user.Email, user.Password)
+	res := query.QueryRowContext(ctx, user.Name, user.Email, user.Password.Hashed)
 	// Update user pointer with CreatedAt field.
 	if err := res.Scan(&user.Id, &user.CreatedAt); err != nil {
+		// TODO: Identify which error is thrown and convert it to custome error.
 		return err
 	}
 	return nil
