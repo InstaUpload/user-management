@@ -55,17 +55,19 @@ func (p *Password) ComparePassword() error {
 	return nil
 }
 
-type UserPayload struct {
-	Id         int       `json:"id"`
-	Name       string    `json:"name" validate:"required"`
-	Email      string    `json:"email" validate:"required,email"`
-	Password   string    `json:"-" validate:"required,gte=3"` // NOTE: I think this should be string since in payload we'll only get string password.
-	IsVerified bool      `json:"is_verified"`
-	CreatedAt  time.Time `json:"created_at"`
+type CreateUserPayload struct {
+	Name     string `json:"name" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"-" validate:"required,gte=3"`
+}
+
+type LoginUserPayload struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"-" validate:"required,gte=3"`
 }
 
 type User struct {
-	Id         int       `json:"id"`
+	Id         int64     `json:"id"`
 	Name       string    `json:"name"`
 	Email      string    `json:"email"`
 	Password   Password  `json:"-"`

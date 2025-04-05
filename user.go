@@ -9,7 +9,7 @@ import (
 
 func (h *Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	// convert in to UserPayload.
-	userData := types.UserPayload{
+	userData := types.CreateUserPayload{
 		Name:     in.Name,
 		Email:    in.Email,
 		Password: in.Password,
@@ -18,4 +18,20 @@ func (h *Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb
 		return nil, err
 	}
 	return &pb.CreateUserResponse{Msg: "User created successfully"}, nil
+}
+
+func (h *Handler) LoginUser(ctx context.Context, in *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
+	// convert in to LoginUserPayload.
+	userData := types.LoginUserPayload{
+		Email:    in.Email,
+		Password: in.Password,
+	}
+	// call grpcService.User.Login() and check for err.
+	token, err = h.grpcService.User.Login(ctx, &userData)
+	// if error found return empity string and error.
+	if err != nil {
+		return nil, err
+	}
+	// else return token and empty error.
+	return &pb.LoginUserResponse{token: token}, nil
 }

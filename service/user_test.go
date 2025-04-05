@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	common "github.com/InstaUpload/common/types"
 	"github.com/InstaUpload/user-management/store"
@@ -14,7 +13,7 @@ import (
 func TestCreate(t *testing.T) {
 	mockService := NewService(&store.MockStore)
 	ctx := context.Background()
-	user := types.UserPayload{
+	user := types.CreateUserPayload{
 		Name:     "Sahaj",
 		Email:    "gpt.sahaj28@gmail.com",
 		Password: "password123",
@@ -23,14 +22,11 @@ func TestCreate(t *testing.T) {
 		if err := mockService.User.Create(ctx, &user); err != nil {
 			t.Errorf("Can not create user, err: %v", err)
 		}
-		if user.CreatedAt.Day() != time.Now().Day() {
-			t.Errorf("Logic error in creating user got %v date want %v", user.CreatedAt.Day(), time.Now().Day())
-		}
 	})
-	t.Run("Fail Create User", func(t *testing.T) {
+	t.Run("Fail when existing user tries to create account", func(t *testing.T) {
 		err := mockService.User.Create(ctx, &user)
 		if !errors.Is(err, common.ErrDataFound) {
-			t.Errorf("Expected ErrorDataFound, but got %v", err)
+			t.Errorf("Expected ErrDataFound, but got %v", err)
 		}
 	})
 }
@@ -38,11 +34,30 @@ func TestCreate(t *testing.T) {
 func TestLogin(t *testing.T) {
 	mockService := NewService(&store.MockStore)
 	ctx := context.Background()
-	user := types.UserPayload{
-		Name:     "Sahaj",
+	user := types.LoginUserPayload{
 		Email:    "gpt.sahaj28@gmail.com",
 		Password: "password123",
 	}
 	t.Run("Pass Login User", func(t *testing.T) {
+		token, err := mockService.User.Login(ctx, &user)
+		if err != nil {
+			t.Errorf("Can not login user, err: %v", err)
+		}
+		if token == "" {
+			t.Errorf("Expected token but got empty string")
+		}
+	})
+	user = types.LoginUserPayload{
+		Email:    "gpt.sahaj@gmail.com",
+		Password: "password123",
+	}
+	t.Run("Fail when non existing user tries to login", func(t *testing.T) {
+		token, err := mockService.User.Login(ctx, &user)
+		if !errors.Is(err, common.ErrDataNotFound) {
+			t.Errorf("Expected ErrDataNotFound, but got %v", err)
+		}
+		if token != "" {
+			t.Errorf("Expected empty string as token, but got %s", token)
+		}
 	})
 }

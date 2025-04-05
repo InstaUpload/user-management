@@ -29,3 +29,19 @@ func (s *UserStore) Create(ctx context.Context, user *types.User) error {
 	}
 	return nil
 }
+
+func (s *UserStore) GetUserByEmail(ctx context.Context, user *types.User) error {
+	// prepare query to get user using email from database.
+	query, err := s.db.PrepareContext(ctx,
+		`SELECT id, name, email, password FROM users WHERE email = $1`)
+	if err != nil {
+		return err
+	}
+	// If user doesn't exist return error.
+	res := query.QueryRowContext(ctx, user.Email)
+	// Update user pointer with CreatedAt field.
+	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.Password.Hashed); err != nil {
+		return err
+	}
+	return nil
+}
