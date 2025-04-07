@@ -11,6 +11,7 @@ type Store struct {
 	User interface {
 		Create(context.Context, *types.User) error
 		GetUserByEmail(context.Context, *types.User) error
+		GetUserById(context.Context, *types.User) error
 	}
 }
 

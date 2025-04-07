@@ -21,3 +21,19 @@ func (j *JWTService) GenerateToken(userId int64) (string, error) {
 	})
 	return token.SignedString(j.jwtSecret)
 }
+
+func (j *JWTService) ParseToken(token string) (int64, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return j.jwtSecret, nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	strUserId := claims["userId"].(string)
+	userId, err := strconv.ParseInt(strUserId, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return userId, nil
+}

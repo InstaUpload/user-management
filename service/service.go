@@ -16,6 +16,7 @@ type Service struct {
 	User interface {
 		Create(context.Context, *types.CreateUserPayload) error
 		Login(context.Context, *types.LoginUserPayload) (string, error)
+		Auth(context.Context, string) (types.User, error)
 	}
 }
 

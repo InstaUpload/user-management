@@ -35,3 +35,19 @@ func (h *Handler) LoginUser(ctx context.Context, in *pb.LoginUserRequest) (*pb.L
 	// else return token and empty error.
 	return &pb.LoginUserResponse{token: token}, nil
 }
+
+func (h *Handler) AuthUser(ctx context.Context, in *pb.AuthUserRequest) (*pb.AuthUserResponse, error) {
+	token := in.Token
+	userData, err := h.grpcService.User.Auth(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	userRes := pb.AuthUserResponse{
+		Id:         userData.Id,
+		Name:       userData.Name,
+		Email:      userData.Email,
+		CreatedAt:  userData.CreatedAt,
+		IsVerified: userData.IsVerified,
+	}
+	return &userRes, nil
+}

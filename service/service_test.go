@@ -15,6 +15,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const MockService string = "MockService"
+
+var testCtx context.Context = context.Background()
+
 func TestMain(m *testing.M) {
 	err := godotenv.Load("../.env")
 	if err != nil {
@@ -30,13 +34,12 @@ func TestMain(m *testing.M) {
 		MaxIdleTime:      utils.GetEnvString("TESTDATABASEIDLETIME", "1m"),
 		MigrationsFolder: "../migrations",
 	}
-	ctx := context.Background()
-	container, err := database.CreatePostgresContainer(ctx, &testDbConfig)
+	container, err := database.CreatePostgresContainer(testCtx, &testDbConfig)
 	if err != nil {
 		log.Fatalf("Can not create postgres container")
 		return
 	}
-	connectionString, err := container.ConnectionString(ctx, "sslmode=disable")
+	connectionString, err := container.ConnectionString(testCtx, "sslmode=disable")
 	if err != nil {
 		log.Fatalf("Error in getting connection string: %v", err)
 		return
@@ -49,6 +52,7 @@ func TestMain(m *testing.M) {
 	}
 	database.Setup(&testDbConfig)
 	store.MockStore = store.NewStore(db)
+	testCtx = context.WithValue(testCtx, MockService, NewService(&store.MockStore))
 	validate = validator.New()
 	exitCode := m.Run()
 	database.KillPostgresContainer(container)

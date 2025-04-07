@@ -45,3 +45,18 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, user *types.User) error 
 	}
 	return nil
 }
+
+func (s *UserStore) GetUserById(ctx context.Context, user *types.User) error {
+	query, err := s.db.PrepareContext(ctx,
+		`SELECT id, name, email, is_verified, created_at FROM users WHERE id = $1`)
+	if err != nil {
+		return err
+	}
+	// If user doesn't exist return error.
+	res := query.QueryRowContext(ctx, user.Id)
+	// Update user pointer with CreatedAt field.
+	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.IsVerified, &user.CreatedAt); err != nil {
+		return err
+	}
+	return nil
+}
