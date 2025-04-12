@@ -12,6 +12,7 @@ type Store struct {
 		Create(context.Context, *types.User) error
 		GetUserByEmail(context.Context, *types.User) error
 		GetUserById(context.Context, *types.User) error
+		UpdateUserRole(context.Context, *types.User, string) error
 	}
 }
 

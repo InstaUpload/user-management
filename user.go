@@ -51,3 +51,12 @@ func (h *Handler) AuthUser(ctx context.Context, in *pb.AuthUserRequest) (*pb.Aut
 	}
 	return &userRes, nil
 }
+
+func (h *Handler) UpdateUserRole(ctx context.Context, in *pb.UpdateUserRoleRequest) (*pb.UpdateUserRoleResponse, error) {
+	role := in.RoleName
+	userId := in.UserId
+	if err := h.grpcService.User.UpdateRole(ctx, userId, role); err != nil {
+		return nil, err
+	}
+	return &pb.UpdateUserRoleResponse{Msg: "User role updated"}, nil
+}

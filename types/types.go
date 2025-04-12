@@ -73,4 +73,12 @@ type User struct {
 	Password   Password  `json:"-"`
 	IsVerified bool      `json:"is_verified"`
 	CreatedAt  time.Time `json:"created_at"`
+	RoleId     int64     `json:"role_id"`
+	Role       Role      `json:"role,omitempty"`
+}
+
+type Role struct {
+	Id        int64     `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
 }

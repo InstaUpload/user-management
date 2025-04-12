@@ -16,6 +16,7 @@ import (
 )
 
 const MockService string = "MockService"
+const TestUser string = "CurrentUser"
 
 var testCtx context.Context = context.Background()
 

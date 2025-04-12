@@ -80,6 +80,7 @@ func TestAuth(t *testing.T) {
 		if user.Id == 0 {
 			t.Errorf("Expected user id 1 but got 0")
 		}
+		testCtx = context.WithValue(testCtx, TestUser, user)
 	})
 	token = token + "invalid"
 	t.Run("Fail user auth", func(t *testing.T) {
@@ -91,4 +92,32 @@ func TestAuth(t *testing.T) {
 			t.Errorf("Expected user id to be 0 but got %d", user.Id)
 		}
 	})
+}
+
+func TestUpdateRole(t *testing.T) {
+	mockService, ok := testCtx.Value(MockService).(Service)
+	if !ok {
+		t.Errorf("Need MockService to perform test")
+	}
+	testAdminUser, ok := testCtx.Value(TestUser).(types.User)
+	if !ok {
+		t.Errorf("Need TestUser to perform test")
+	}
+	testAdminUser.Role.Name = "admin"
+	testCtx = context.WithValue(testCtx, TestUser, testAdminUser)
+	// NOTE: types.User is expected in ctx.
+	t.Run("Pass User Update Role function", func(t *testing.T) {
+		if err := mockService.User.UpdateRole(testCtx, 1, "admin"); err != nil {
+			t.Errorf("Expected no error but got %v", err.Error())
+		}
+	})
+	t.Run("Fail User Update Role function", func(t *testing.T) {
+		if err := mockService.User.UpdateRole(testCtx, 1, "superAdmin"); err != nil {
+			if !errors.Is(err, common.ErrDataNotFound) {
+				t.Errorf("Expected data not found error but got %v", err.Error())
+			}
+		}
+	})
+	testAdminUser.Role.Name = "regular"
+	testCtx = context.WithValue(testCtx, TestUser, testAdminUser)
 }

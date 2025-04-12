@@ -33,14 +33,17 @@ func (s *UserStore) Create(ctx context.Context, user *types.User) error {
 func (s *UserStore) GetUserByEmail(ctx context.Context, user *types.User) error {
 	// prepare query to get user using email from database.
 	query, err := s.db.PrepareContext(ctx,
-		`SELECT id, name, email, password FROM users WHERE email = $1`)
+		`SELECT u.id, u.name, u.email, u.password, u.is_verified, u.created_at, u.role_id, r.name FROM users u 
+		JOIN roles r ON u.role_id = r.id
+		WHERE u.email = $1
+		`)
 	if err != nil {
 		return err
 	}
 	// If user doesn't exist return error.
 	res := query.QueryRowContext(ctx, user.Email)
 	// Update user pointer with CreatedAt field.
-	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.Password.Hashed); err != nil {
+	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.Password.Hashed, &user.IsVerified, &user.CreatedAt, &user.RoleId, &user.Role.Name); err != nil {
 		return err
 	}
 	return nil
@@ -48,14 +51,40 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, user *types.User) error 
 
 func (s *UserStore) GetUserById(ctx context.Context, user *types.User) error {
 	query, err := s.db.PrepareContext(ctx,
-		`SELECT id, name, email, is_verified, created_at FROM users WHERE id = $1`)
+		`SELECT u.id, u.name, u.email, u.is_verified, u.created_at, u.role_id, r.name FROM users u
+		JOIN roles r ON u.role_id = r.id
+		WHERE u.id = $1
+		`)
 	if err != nil {
 		return err
 	}
 	// If user doesn't exist return error.
 	res := query.QueryRowContext(ctx, user.Id)
 	// Update user pointer with CreatedAt field.
-	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.IsVerified, &user.CreatedAt); err != nil {
+	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.IsVerified, &user.CreatedAt, &user.RoleId, &user.Role.Name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *UserStore) UpdateUserRole(ctx context.Context, user *types.User, roleName string) error {
+	var roleId int64
+	query, err := s.db.PrepareContext(ctx,
+		`SELECT id FROM roles WHERE name = $1`)
+	if err != nil {
+		return err
+	}
+	res := query.QueryRowContext(ctx, roleName)
+	if err := res.Scan(&roleId); err != nil {
+		return err
+	}
+	query, err = s.db.PrepareContext(ctx,
+		`UPDATE users SET role_id = $1 WHERE id = $2`)
+	if err != nil {
+		return err
+	}
+	_, err = query.ExecContext(ctx, roleId, user.Id)
+	if err != nil {
 		return err
 	}
 	return nil

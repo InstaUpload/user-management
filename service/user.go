@@ -3,12 +3,18 @@ package service
 import (
 	"context"
 	"log"
+	"slices"
 	"strings"
 
 	common "github.com/InstaUpload/common/types"
 	"github.com/InstaUpload/user-management/store"
 	"github.com/InstaUpload/user-management/types"
 )
+
+const CurrentUser string = "CurrentUser"
+
+// TODO: Create a const array name it superadmin and add emails in it.
+var superadmin = []string{"gpt.sahaj@gmail.com"}
 
 type UserService struct {
 	dbstore    *store.Store
@@ -58,6 +64,7 @@ func (s *UserService) Login(ctx context.Context, userPayload *types.LoginUserPay
 		if strings.Contains(err.Error(), "no rows") {
 			return "", common.ErrDataNotFound
 		}
+
 		log.Printf("err: %s", err.Error())
 		return "", err
 	}
@@ -71,6 +78,7 @@ func (s *UserService) Login(ctx context.Context, userPayload *types.LoginUserPay
 	token, err := s.jwtService.GenerateToken(user.Id)
 	if err != nil {
 		log.Printf("err: %s", err.Error())
+		// TODO: To be updated to internal server error.
 		return "", common.ErrDataNotFound
 	}
 	// return token.
@@ -101,7 +109,38 @@ func (s *UserService) Auth(ctx context.Context, token string) (types.User, error
 		log.Printf("err: %s", err.Error())
 		return user, err
 	}
-	log.Println("Got User from database")
 	// return user.
 	return user, nil
+}
+
+func (s *UserService) UpdateRole(ctx context.Context, userId int64, roleName string) error {
+	// Check if current user has admin role. or current user is one of super admin users.
+	currentUser := ctx.Value(CurrentUser).(types.User)
+	if currentUser.Role.Name != "admin" {
+		return common.ErrIncorrectDataReceived
+	}
+	// Get user by passed id.
+	var userToBeUpdated types.User
+	userToBeUpdated.Id = userId
+	if err := s.dbstore.User.GetUserById(ctx, &userToBeUpdated); err != nil {
+		return common.ErrIncorrectDataReceived
+	}
+	// Check if user to be updated in super admin user, if so return an Incorrect data error.
+	if slices.Contains(superadmin, userToBeUpdated.Email) {
+		return common.ErrIncorrectDataReceived
+	}
+	// Update user role to passed roleName.
+
+	if err := s.dbstore.User.UpdateUserRole(ctx, &userToBeUpdated, roleName); err != nil {
+		// TODO: check the error type if it containes role deosnt exist.
+		// Then return ErrIncorrectDataReceived error.
+		if strings.Contains(err.Error(), "no rows") {
+			return common.ErrDataNotFound
+		}
+		log.Printf("err: %s", err.Error())
+		return err
+
+	}
+	// Return nil if update is successful.
+	return nil
 }
