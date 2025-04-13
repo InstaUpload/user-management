@@ -17,6 +17,7 @@ import (
 
 const MockService string = "MockService"
 const TestUser string = "CurrentUser"
+const TestPasswordToken string = "PasswordResetToken"
 
 var testCtx context.Context = context.Background()
 

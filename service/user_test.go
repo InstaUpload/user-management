@@ -121,3 +121,25 @@ func TestUpdateRole(t *testing.T) {
 	testAdminUser.Role.Name = "regular"
 	testCtx = context.WithValue(testCtx, TestUser, testAdminUser)
 }
+
+func TestResetPassword(t *testing.T) {
+	mockService, ok := testCtx.Value(MockService).(Service)
+	if !ok {
+		t.Errorf("Need MockService to perform test")
+	}
+	testAdminUser, ok := testCtx.Value(TestUser).(types.User)
+	if !ok {
+		t.Errorf("Need TestUser to perform test")
+	}
+	email := testAdminUser.Email
+	t.Run("Reset password", func(t *testing.T) {
+		token, err := mockService.User.ResetPassword(testCtx, email)
+		if err != nil {
+			t.Errorf("Expected no error but got %v", err.Error())
+		}
+		if token == "" {
+			t.Errorf("Expected token to be set")
+		}
+		testCtx = context.WithValue(testCtx, TestPasswordToken, token)
+	})
+}

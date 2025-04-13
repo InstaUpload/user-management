@@ -60,3 +60,12 @@ func (h *Handler) UpdateUserRole(ctx context.Context, in *pb.UpdateUserRoleReque
 	}
 	return &pb.UpdateUserRoleResponse{Msg: "User role updated"}, nil
 }
+
+func (h *Handler) ResetUserPassword(ctx context.Context, in *pb.ResetUserPasswordRequest) (*pb.ResetUserPasswordRespons, error) {
+	email := in.Email
+	_, err := h.grpcService.User.ResetPassword(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ResetUserPasswordResponse{Msg: "Email send to registered email address."}, nil
+}

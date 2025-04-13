@@ -18,6 +18,7 @@ type Service struct {
 		Login(context.Context, *types.LoginUserPayload) (string, error)
 		Auth(context.Context, string) (types.User, error)
 		UpdateRole(context.Context, int64, string) error
+		ResetPassword(context.Context, string) (string, error)
 	}
 }
 

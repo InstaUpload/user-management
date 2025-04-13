@@ -12,6 +12,7 @@ import (
 )
 
 const CurrentUser string = "CurrentUser"
+const PasswordResetToken string = "PasswordResetToken"
 
 // TODO: Create a const array name it superadmin and add emails in it.
 var superadmin = []string{"gpt.sahaj@gmail.com"}
@@ -145,4 +146,20 @@ func (s *UserService) UpdateRole(ctx context.Context, userId int64, roleName str
 	}
 	// Return nil if update is successful.
 	return nil
+}
+
+func (s *UserService) ResetPassword(ctx context.Context, email string) (string, error) {
+	var user types.User
+	user.Email = email
+	if err := s.dbstore.User.GetUserByEmail(ctx, &user); err != nil {
+		return "", common.ErrIncorrectDataReceived
+	}
+	token, err := s.jwtService.GeneratePasswordToken(user.Id)
+	if err != nil {
+		log.Printf("err: %s", err.Error())
+		// TODO: To be updated to internal server error.
+		return "", common.ErrDataNotFound
+	}
+	// TODO: Send mail with token to update password.
+	return token, nil
 }
