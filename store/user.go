@@ -89,3 +89,16 @@ func (s *UserStore) UpdateUserRole(ctx context.Context, user *types.User, roleNa
 	}
 	return nil
 }
+
+func (s *UserStore) UpdateUserPassword(ctx context.Context, user *types.User) error {
+	query, err := s.db.PrepareContext(ctx, `UPDATE users SET password =$1 WHERE id =$2`)
+	if err != nil {
+		return err
+	}
+
+	_, err = query.ExecContext(ctx, user.Password.Hashed, user.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

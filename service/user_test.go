@@ -142,4 +142,47 @@ func TestResetPassword(t *testing.T) {
 		}
 		testCtx = context.WithValue(testCtx, TestPasswordToken, token)
 	})
+	t.Run("Fail Reset password", func(t *testing.T) {
+		email = "notfound@gmail.com"
+		token, err := mockService.User.ResetPassword(testCtx, email)
+		if !errors.Is(err, common.ErrIncorrectDataReceived) {
+			t.Errorf("Expected Incorrect data error, but got %s", err.Error())
+		}
+		if token != "" {
+			t.Errorf("Did not expect token but got %s", token)
+		}
+	})
+}
+
+func TestUpdatePassword(t *testing.T) {
+	mockService, ok := testCtx.Value(MockService).(Service)
+	if !ok {
+		t.Errorf("Need MockService to perform test")
+	}
+	token := testCtx.Value(TestPasswordToken).(string)
+	password := "updated password"
+	t.Run("Pass Update user password using token", func(t *testing.T) {
+		if err := mockService.User.UpdatePassword(testCtx, token, password); err != nil {
+			t.Errorf("Did not expect error but got %v", err)
+		}
+		user := types.LoginUserPayload{
+			Email:    "gpt.sahaj28@gmail.com",
+			Password: password,
+		}
+		token, err := mockService.User.Login(testCtx, &user)
+		if err != nil {
+			t.Errorf("Did not expect error but got %v", err)
+		}
+		if token == "" {
+			t.Error("Expected token but got none.")
+		}
+	})
+	t.Run("Fail Update user passr", func(t *testing.T) {
+		token = token + "invalid"
+		if err := mockService.User.UpdatePassword(testCtx, token, "<PASSWORD>"); err != nil {
+			if !errors.Is(err, common.ErrDataNotFound) {
+				t.Errorf("Expected data not for error but got %v", err)
+			}
+		}
+	})
 }

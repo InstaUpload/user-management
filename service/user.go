@@ -163,3 +163,34 @@ func (s *UserService) ResetPassword(ctx context.Context, email string) (string, 
 	// TODO: Send mail with token to update password.
 	return token, nil
 }
+
+func (s *UserService) UpdatePassword(ctx context.Context, token, newPass string) error {
+	// create a empity user variable of type types.User.
+	var user types.User
+	// Parse token to get userId.
+	userId, err := s.jwtService.ParsePasswordToken(token)
+	if err != nil {
+		// check the error message and return error accordingly.
+		if strings.Contains(err.Error(), "token is expired") {
+			return common.ErrIncorrectDataReceived
+		} else if strings.Contains(err.Error(), "token is invalid") {
+			return common.ErrDataNotFound
+		}
+	}
+	user.Id = userId
+	// Assign password to user.Password.Text
+	user.Password.Text = newPass
+	// Genrate Hash of new password.
+	user.Password.HashPassword()
+	// Store new password in database.
+	if err := s.dbstore.User.UpdateUserPassword(ctx, &user); err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return common.ErrDataNotFound
+		}
+		log.Printf("err: %s", err.Error())
+		return err
+
+	}
+	// Return nil if update is successful.
+	return nil
+}

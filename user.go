@@ -69,3 +69,13 @@ func (h *Handler) ResetUserPassword(ctx context.Context, in *pb.ResetUserPasswor
 	}
 	return &pb.ResetUserPasswordResponse{Msg: "Email send to registered email address."}, nil
 }
+
+func (h *Handler) UpdateUserPassword(ctx context.Context, in *pb.UpdateUserPasswordRequest) (*pb.UpdateUserPasswordResponse, error) {
+	token := in.Token
+	password := in.Password
+
+	if err := h.grpcService.User.UpdatePassword(ctx, email, password); err != nil {
+		return nil, err
+	}
+	return &pb.UpdateUserPasswordResponse{Msg: "Password updated."}, nil
+}

@@ -19,6 +19,7 @@ type Service struct {
 		Auth(context.Context, string) (types.User, error)
 		UpdateRole(context.Context, int64, string) error
 		ResetPassword(context.Context, string) (string, error)
+		UpdatePassword(context.Context, string, string) error
 	}
 }
 
