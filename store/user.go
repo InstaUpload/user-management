@@ -102,3 +102,15 @@ func (s *UserStore) UpdateUserPassword(ctx context.Context, user *types.User) er
 	}
 	return nil
 }
+
+func (s *UserStore) Verify(ctx context.Context, user *types.User) error {
+	query, err := s.db.PrepareContext(ctx, `UPDATE users SET is_verified = TRUE WHERE id =$1`)
+	if err != nil {
+		return err
+	}
+	_, err = query.ExecContext(ctx, user.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

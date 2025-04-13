@@ -12,7 +12,6 @@ import (
 )
 
 const CurrentUser string = "CurrentUser"
-const PasswordResetToken string = "PasswordResetToken"
 
 // TODO: Create a const array name it superadmin and add emails in it.
 var superadmin = []string{"gpt.sahaj@gmail.com"}
@@ -24,6 +23,8 @@ type UserService struct {
 		ParseAuthToken(string) (int64, error)
 		GeneratePasswordToken(int64) (string, error)
 		ParsePasswordToken(string) (int64, error)
+		GenerateVerifyToken(int64) (string, error)
+		ParseVerifyToken(string) (int64, error)
 	}
 }
 
@@ -193,4 +194,43 @@ func (s *UserService) UpdatePassword(ctx context.Context, token, newPass string)
 	}
 	// Return nil if update is successful.
 	return nil
+}
+
+func (s *UserService) Verify(ctx context.Context, token string) error {
+	var user types.User
+	// Parse the token. to get the user id.
+	// TODO: Need to create ParseseVerifyToken function in jwtService to return user id.
+	userId, err := s.jwtService.ParseVerifyToken(token)
+	if err != nil {
+		// check the error message and return error accordingly.
+		if strings.Contains(err.Error(), "token is expired") {
+			return common.ErrIncorrectDataReceived
+		} else if strings.Contains(err.Error(), "token is invalid") {
+			return common.ErrDataNotFound
+		}
+	}
+	user.Id = userId
+	// Check if the user is verified or not.
+	if user.IsVerified {
+		// TODO: Need to update errors returned.
+		return common.ErrIncorrectDataReceived
+	}
+	// If user is not verified then call the Verify function from dbstore.
+	if err := s.dbstore.User.Verify(ctx, &user); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *UserService) SendVerification(ctx context.Context) (string, error) {
+	// Check if current user has admin role. or current user is one of super admin users.
+	currentUser := ctx.Value(CurrentUser).(types.User)
+	token, err := s.jwtService.GenerateVerifyToken(currentUser.Id)
+	if err != nil {
+		log.Printf("err: %s", err.Error())
+		// TODO: To be updated to internal server error.
+		return "", common.ErrDataNotFound
+	}
+	// TODO: Send mail with token to update password.
+	return token, nil
 }

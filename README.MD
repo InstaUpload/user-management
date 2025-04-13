@@ -6,9 +6,11 @@ This repo/module deals with everyting releated to users of InstaUpload.
 - ### Test.
 	[x] Create a global context that can be used by all the test functions.
 	[x] Add MockService in global context.
-	[ ] Add Create user's user in the global context.
-	[ ] Use user from global context to login and add JWT token in global context.
+	[x] Add Create user's user in the global context.
+	[x] Use user from global context to login and add JWT token in global context.
 	[x] User JWT token from global context to test AuthUser function.
+	[] Add Fail test for `SendVerification` function.
+	[] Add Fail test for `Verify` function.
 - ### Database.
 	[x] Add PostgreSQL database for this microservice.
 	[x] Add migration for users table.
@@ -27,4 +29,4 @@ This repo/module deals with everyting releated to users of InstaUpload.
 	[x] Add database migration files to add and remove roles table and alter users table.
 	[ ] Update Auth function to return user role as well.
 	[ ] Update gRPC Auth function response to send role as well.
-	[ ] Add function in storage layer to update the role based on the given string.
+	[x] Add function in storage layer to update the role based on the given string.

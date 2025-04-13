@@ -20,6 +20,8 @@ type Service struct {
 		UpdateRole(context.Context, int64, string) error
 		ResetPassword(context.Context, string) (string, error)
 		UpdatePassword(context.Context, string, string) error
+		Verify(context.Context, string) error
+		SendVerification(context.Context) (string, error)
 	}
 }
 
@@ -27,11 +29,14 @@ func NewService(dbstore *store.Store) Service {
 	// TODO: below lines needs to be update to add time and secret for password reset.
 	expTime := time.Now().Add(time.Hour * time.Duration(utils.GetEnvInt("JWTEXPHR", 24))).Unix()
 	passwordExpTime := time.Now().Add(time.Second * time.Duration(utils.GetEnvInt("JWTPASSWORDEXPTIME", 240))).Unix()
+	verifyExpTime := time.Now().Add(time.Hour * time.Duration(utils.GetEnvInt("JWTVERIFYEXPTIME", 240))).Unix()
 	jwtService := &JWTService{
 		authExpire:     time.Unix(expTime, 0),
 		authSecret:     []byte(utils.GetEnvString("JWTSECRET", "secret")),
 		passwordExpire: time.Unix(passwordExpTime, 0),
 		passwordSecret: []byte(utils.GetEnvString("JWTPASSWORDEXPTIME", "secret")),
+		verifyExpire:   time.Unix(verifyExpTime, 0),
+		verifySecret:   []byte(utils.GetEnvString("JWTVERIFYSECRET", "secret")),
 	}
 	return Service{
 		User: &UserService{

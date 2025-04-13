@@ -7,12 +7,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// modify these attributes divide them into 4, 2 for login 2 for update password.
 type JWTService struct {
 	authExpire     time.Time
 	authSecret     []byte
 	passwordExpire time.Time
 	passwordSecret []byte
+	verifyExpire   time.Time
+	verifySecret   []byte
 }
 
 func (j *JWTService) GenerateAuthToken(userId int64) (string, error) {
@@ -53,6 +54,30 @@ func (j *JWTService) ParsePasswordToken(token string) (int64, error) {
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return j.passwordSecret, nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	strUserId := claims["userId"].(string)
+	userId, err := strconv.ParseInt(strUserId, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return userId, nil
+}
+
+func (j *JWTService) GenerateVerifyToken(userId int64) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId":    strconv.FormatInt(userId, 10),
+		"expiredAt": j.verifyExpire,
+	})
+	return token.SignedString(j.verifySecret)
+}
+
+func (j *JWTService) ParseVerifyToken(token string) (int64, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return j.verifySecret, nil
 	})
 	if err != nil {
 		return 0, err

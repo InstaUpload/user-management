@@ -9,6 +9,10 @@ import (
 	"github.com/InstaUpload/user-management/types"
 )
 
+const TestUser string = "CurrentUser"
+const TestPasswordToken string = "PasswordResetToken"
+const TestVerifyToken string = "VerifyToken"
+
 func TestCreate(t *testing.T) {
 	mockService, ok := testCtx.Value(MockService).(Service)
 	if !ok {
@@ -183,6 +187,35 @@ func TestUpdatePassword(t *testing.T) {
 			if !errors.Is(err, common.ErrDataNotFound) {
 				t.Errorf("Expected data not for error but got %v", err)
 			}
+		}
+	})
+}
+
+func TestSendVerification(t *testing.T) {
+	mockService, ok := testCtx.Value(MockService).(Service)
+	if !ok {
+		t.Errorf("Need MockService to perform test")
+	}
+	t.Run("Pass Send varification to user function", func(t *testing.T) {
+		token, err := mockService.User.SendVerification(testCtx)
+		if err != nil {
+			t.Errorf("did not expect error but got %v", err)
+		} else if token == "" {
+			t.Errorf("Expected token to be not empty")
+		}
+		testCtx = context.WithValue(testCtx, TestVerifyToken, token)
+	})
+}
+
+func TestVerify(t *testing.T) {
+	mockService, ok := testCtx.Value(MockService).(Service)
+	if !ok {
+		t.Errorf("Need MockService to perform test")
+	}
+	token := testCtx.Value(TestVerifyToken).(string)
+	t.Run("Pass Verify user function", func(t *testing.T) {
+		if err := mockService.User.Verify(testCtx, token); err != nil {
+			t.Errorf("did not expect error but got %v", err)
 		}
 	})
 }
