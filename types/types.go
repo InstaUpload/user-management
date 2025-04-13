@@ -37,6 +37,7 @@ type Password struct {
 }
 
 func (p *Password) HashPassword() error {
+	// TODO: Get the salt from env variable.
 	hashedpw, err := bcrypt.GenerateFromPassword([]byte(p.Text), 8)
 	if err != nil {
 		return err

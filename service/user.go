@@ -19,8 +19,10 @@ var superadmin = []string{"gpt.sahaj@gmail.com"}
 type UserService struct {
 	dbstore    *store.Store
 	jwtService interface {
-		GenerateToken(int64) (string, error)
-		ParseToken(string) (int64, error)
+		GenerateAuthToken(int64) (string, error)
+		ParseAuthToken(string) (int64, error)
+		GeneratePasswordToken(int64) (string, error)
+		ParsePasswordToken(string) (int64, error)
 	}
 }
 
@@ -75,7 +77,7 @@ func (s *UserService) Login(ctx context.Context, userPayload *types.LoginUserPay
 		return "", common.ErrIncorrectDataReceived
 	}
 	// generate token and return it.
-	token, err := s.jwtService.GenerateToken(user.Id)
+	token, err := s.jwtService.GenerateAuthToken(user.Id)
 	if err != nil {
 		log.Printf("err: %s", err.Error())
 		// TODO: To be updated to internal server error.
@@ -88,7 +90,7 @@ func (s *UserService) Login(ctx context.Context, userPayload *types.LoginUserPay
 func (s *UserService) Auth(ctx context.Context, token string) (types.User, error) {
 	// get userId from token.
 	var user types.User
-	userId, err := s.jwtService.ParseToken(token)
+	userId, err := s.jwtService.ParseAuthToken(token)
 	if err != nil {
 		// check the error message and return error accordingly.
 		if strings.Contains(err.Error(), "token is expired") {
