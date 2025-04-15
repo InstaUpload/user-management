@@ -218,4 +218,19 @@ func TestVerify(t *testing.T) {
 			t.Errorf("did not expect error but got %v", err)
 		}
 	})
+	t.Run("Fail Verify user function with Verified user", func(t *testing.T) {
+		if err := mockService.User.Verify(testCtx, token); err != nil {
+			if !errors.Is(err, common.ErrIncorrectDataReceived) {
+				t.Errorf("Expected Incorrect data recevied error but got %v", err)
+			}
+		}
+	})
+	token = token + "Invalid"
+	t.Run("Fail Verify user function with Invalid token", func(t *testing.T) {
+		if err := mockService.User.Verify(testCtx, token); err != nil {
+			if !errors.Is(err, common.ErrDataNotFound) {
+				t.Errorf("Expected data not found error but got %v", err)
+			}
+		}
+	})
 }

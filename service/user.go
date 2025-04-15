@@ -57,6 +57,11 @@ func (s *UserService) Create(ctx context.Context, userPayload *types.CreateUserP
 }
 
 func (s *UserService) Login(ctx context.Context, userPayload *types.LoginUserPayload) (string, error) {
+	if err := validate.Struct(userPayload); err != nil {
+		// return a custome error from errors package. for invalide data.
+		log.Printf("invalid user data: %v", err)
+		return common.ErrIncorrectDataReceived
+	}
 	// convert userPayload to user.
 	user := types.User{
 		Email: userPayload.Email,
@@ -97,7 +102,7 @@ func (s *UserService) Auth(ctx context.Context, token string) (types.User, error
 		// check the error message and return error accordingly.
 		if strings.Contains(err.Error(), "token is expired") {
 			return user, common.ErrIncorrectDataReceived
-		} else if strings.Contains(err.Error(), "token is invalid") {
+		} else if strings.Contains(err.Error(), "signature is invalid") {
 			return user, common.ErrDataNotFound
 		}
 	}
@@ -174,7 +179,7 @@ func (s *UserService) UpdatePassword(ctx context.Context, token, newPass string)
 		// check the error message and return error accordingly.
 		if strings.Contains(err.Error(), "token is expired") {
 			return common.ErrIncorrectDataReceived
-		} else if strings.Contains(err.Error(), "token is invalid") {
+		} else if strings.Contains(err.Error(), "signature is invalid") {
 			return common.ErrDataNotFound
 		}
 	}
@@ -205,18 +210,27 @@ func (s *UserService) Verify(ctx context.Context, token string) error {
 		// check the error message and return error accordingly.
 		if strings.Contains(err.Error(), "token is expired") {
 			return common.ErrIncorrectDataReceived
-		} else if strings.Contains(err.Error(), "token is invalid") {
+		} else if strings.Contains(err.Error(), "signature is invalid") {
 			return common.ErrDataNotFound
 		}
+		return err
 	}
 	user.Id = userId
+	if err := s.dbstore.User.GetUserById(ctx, &user); err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return common.ErrDataNotFound
+		}
+		log.Printf("err: %s", err.Error())
+		return err
+	}
 	// Check if the user is verified or not.
 	if user.IsVerified {
-		// TODO: Need to update errors returned.
-		return common.ErrIncorrectDataReceived
+		// returns from function is user is already verified.
+		return nil
 	}
 	// If user is not verified then call the Verify function from dbstore.
 	if err := s.dbstore.User.Verify(ctx, &user); err != nil {
+		// Not sure what kind of error will be returned by database.
 		return err
 	}
 	return nil
