@@ -3,6 +3,7 @@ package utils
 import (
 	"os"
 	"strconv"
+	"strings"
 )
 
 func GetEnvString(key, fallback string) string {
@@ -23,4 +24,14 @@ func GetEnvInt(key string, fallback int) int {
 		return fallback
 	}
 	return valASInt
+}
+
+func GetSuperUsers() []string {
+	superUsers := GetEnvString("SUPERUSERS", "")
+	superUsers = strings.TrimSpace(superUsers)
+	if superUsers == "" {
+		return []string{}
+	} else {
+		return strings.Split(superUsers, ",")
+	}
 }

@@ -9,12 +9,10 @@ import (
 	common "github.com/InstaUpload/common/types"
 	"github.com/InstaUpload/user-management/store"
 	"github.com/InstaUpload/user-management/types"
+	"github.com/InstaUpload/user-management/utils"
 )
 
 const CurrentUser string = "CurrentUser"
-
-// TODO: Create a const array name it superadmin and add emails in it.
-var superadmin = []string{"gpt.sahaj@gmail.com"}
 
 type UserService struct {
 	dbstore    *store.Store
@@ -42,6 +40,14 @@ func (s *UserService) Create(ctx context.Context, userPayload *types.CreateUserP
 	user.Password.Text = userPayload.Password
 
 	user.Password.HashPassword()
+	// Check if email is one of the super user's.
+	if slices.Contains(utils.GetSuperUsers(), userPayload.Email) {
+		// if so then assign 2 to user.RoleId
+		user.RoleId = 2
+	} else {
+		// else make user.RoleId = 1
+		user.RoleId = 1
+	}
 	if err := s.dbstore.User.Create(ctx, &user); err != nil {
 		// Check error, if already exist return common.ErrDataFound error.
 		// write a if block that check if "duplicate key" error, return common.ErrDataFound error.
@@ -60,7 +66,7 @@ func (s *UserService) Login(ctx context.Context, userPayload *types.LoginUserPay
 	if err := validate.Struct(userPayload); err != nil {
 		// return a custome error from errors package. for invalide data.
 		log.Printf("invalid user data: %v", err)
-		return common.ErrIncorrectDataReceived
+		return "", common.ErrIncorrectDataReceived
 	}
 	// convert userPayload to user.
 	user := types.User{
@@ -135,7 +141,7 @@ func (s *UserService) UpdateRole(ctx context.Context, userId int64, roleName str
 		return common.ErrIncorrectDataReceived
 	}
 	// Check if user to be updated in super admin user, if so return an Incorrect data error.
-	if slices.Contains(superadmin, userToBeUpdated.Email) {
+	if slices.Contains(utils.GetSuperUsers(), userToBeUpdated.Email) {
 		return common.ErrIncorrectDataReceived
 	}
 	// Update user role to passed roleName.

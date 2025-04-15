@@ -14,14 +14,14 @@ type UserStore struct {
 func (s *UserStore) Create(ctx context.Context, user *types.User) error {
 	// prepare query to insert user in database.
 	query, err := s.db.PrepareContext(ctx,
-		`INSERT INTO users (name, email, password) 
-	VALUES ($1, $2, $3)
+		`INSERT INTO users (name, email, password, role_id) 
+	VALUES ($1, $2, $3, $4)
 	RETURNING id, created_at`)
 	if err != nil {
 		return err
 	}
 	// If user doesn't exist Insert user in database.
-	res := query.QueryRowContext(ctx, user.Name, user.Email, user.Password.Hashed)
+	res := query.QueryRowContext(ctx, user.Name, user.Email, user.Password.Hashed, user.RoleId)
 	// Update user pointer with CreatedAt field.
 	if err := res.Scan(&user.Id, &user.CreatedAt); err != nil {
 		// TODO: Identify which error is thrown and convert it to custome error.
