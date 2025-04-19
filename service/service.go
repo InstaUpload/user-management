@@ -22,6 +22,7 @@ type Service struct {
 		UpdatePassword(context.Context, string, string) error
 		Verify(context.Context, string) error
 		SendVerification(context.Context) (string, error)
+		AddEditor(context.Context, int64) error
 	}
 }
 

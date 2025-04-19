@@ -114,3 +114,16 @@ func (s *UserStore) Verify(ctx context.Context, user *types.User) error {
 	}
 	return nil
 }
+
+func (s *UserStore) AddEditorById(ctx context.Context, currentUserId, userId int64) error {
+	query, err := s.db.PrepareContext(ctx,
+		`INSERT INTO editors (user_id, editor_id) VALUES ($1, $2)`)
+	if err != nil {
+		return err
+	}
+	_, err = query.ExecContext(ctx, currentUserId, userId)
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -12,7 +12,9 @@ import (
 	"github.com/InstaUpload/user-management/utils"
 )
 
-const CurrentUser string = "CurrentUser"
+type CurrentUserKey string
+
+const CurrentUser CurrentUserKey = "CurrentUser"
 
 type UserService struct {
 	dbstore    *store.Store
@@ -253,4 +255,30 @@ func (s *UserService) SendVerification(ctx context.Context) (string, error) {
 	}
 	// TODO: Send mail with token to update password.
 	return token, nil
+}
+
+func (s *UserService) AddEditor(ctx context.Context, userId int64) error {
+	// Get current user from ctx.
+	currentUser := ctx.Value(CurrentUser).(types.User)
+	// Check if user id passed is same as current user id, if same return an error.
+	var user types.User
+	user.Id = userId
+	if err := s.dbstore.User.GetUserById(ctx, &user); err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return common.ErrDataNotFound
+		}
+	}
+	if userId == currentUser.Id {
+		return common.ErrIncorrectDataReceived
+	}
+	// Call add editor by id function of store
+	if err := s.dbstore.User.AddEditorById(ctx, currentUser.Id, userId); err != nil {
+		// check if error is of type "duplicate key" error.
+		if strings.Contains(err.Error(), "duplicate key") {
+			return common.ErrIncorrectDataReceived
+		}
+		log.Printf("err: %s", err.Error())
+		return err
+	}
+	return nil
 }
