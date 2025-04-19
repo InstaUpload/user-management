@@ -51,7 +51,7 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, user *types.User) error 
 
 func (s *UserStore) GetUserById(ctx context.Context, user *types.User) error {
 	query, err := s.db.PrepareContext(ctx,
-		`SELECT u.id, u.name, u.email, u.is_verified, u.created_at, u.role_id, r.name FROM users u
+		`SELECT u.id, u.name, u.email, u.is_verified, u.created_on, u.role_id, r.name FROM users u
 		JOIN roles r ON u.role_id = r.id
 		WHERE u.id = $1
 		`)
