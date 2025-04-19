@@ -16,14 +16,14 @@ func (s *UserStore) Create(ctx context.Context, user *types.User) error {
 	query, err := s.db.PrepareContext(ctx,
 		`INSERT INTO users (name, email, password, role_id) 
 	VALUES ($1, $2, $3, $4)
-	RETURNING id, created_at`)
+	RETURNING id, created_on`)
 	if err != nil {
 		return err
 	}
 	// If user doesn't exist Insert user in database.
 	res := query.QueryRowContext(ctx, user.Name, user.Email, user.Password.Hashed, user.RoleId)
 	// Update user pointer with CreatedAt field.
-	if err := res.Scan(&user.Id, &user.CreatedAt); err != nil {
+	if err := res.Scan(&user.Id, &user.CreatedOn); err != nil {
 		// TODO: Identify which error is thrown and convert it to custome error.
 		return err
 	}
@@ -33,7 +33,7 @@ func (s *UserStore) Create(ctx context.Context, user *types.User) error {
 func (s *UserStore) GetUserByEmail(ctx context.Context, user *types.User) error {
 	// prepare query to get user using email from database.
 	query, err := s.db.PrepareContext(ctx,
-		`SELECT u.id, u.name, u.email, u.password, u.is_verified, u.created_at, u.role_id, r.name FROM users u 
+		`SELECT u.id, u.name, u.email, u.password, u.is_verified, u.created_on, u.role_id, r.name FROM users u 
 		JOIN roles r ON u.role_id = r.id
 		WHERE u.email = $1
 		`)
@@ -43,7 +43,7 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, user *types.User) error 
 	// If user doesn't exist return error.
 	res := query.QueryRowContext(ctx, user.Email)
 	// Update user pointer with CreatedAt field.
-	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.Password.Hashed, &user.IsVerified, &user.CreatedAt, &user.RoleId, &user.Role.Name); err != nil {
+	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.Password.Hashed, &user.IsVerified, &user.CreatedOn, &user.RoleId, &user.Role.Name); err != nil {
 		return err
 	}
 	return nil
@@ -61,7 +61,7 @@ func (s *UserStore) GetUserById(ctx context.Context, user *types.User) error {
 	// If user doesn't exist return error.
 	res := query.QueryRowContext(ctx, user.Id)
 	// Update user pointer with CreatedAt field.
-	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.IsVerified, &user.CreatedAt, &user.RoleId, &user.Role.Name); err != nil {
+	if err := res.Scan(&user.Id, &user.Name, &user.Email, &user.IsVerified, &user.CreatedOn, &user.RoleId, &user.Role.Name); err != nil {
 		return err
 	}
 	return nil

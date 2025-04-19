@@ -73,7 +73,7 @@ type User struct {
 	Email      string    `json:"email"`
 	Password   Password  `json:"-"`
 	IsVerified bool      `json:"is_verified"`
-	CreatedAt  time.Time `json:"created_at"`
+	CreatedOn  time.Time `json:"created_on"`
 	RoleId     int64     `json:"role_id"`
 	Role       Role      `json:"role,omitempty"`
 }

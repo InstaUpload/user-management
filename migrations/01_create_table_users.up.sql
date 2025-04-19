@@ -5,6 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(50) NOT NULL,
     email CITEXT UNIQUE NOT NULL,
 	password bytea NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_on TIMESTAMP DEFAULT NOW(),
     is_verified BOOLEAN DEFAULT FALSE
 );

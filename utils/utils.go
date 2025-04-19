@@ -19,11 +19,11 @@ func GetEnvInt(key string, fallback int) int {
 	if !ok {
 		return fallback
 	}
-	valASInt, err := strconv.Atoi(val)
+	valAsInt, err := strconv.Atoi(val)
 	if err != nil {
 		return fallback
 	}
-	return valASInt
+	return valAsInt
 }
 
 func GetSuperUsers() []string {

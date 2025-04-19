@@ -27,13 +27,13 @@ func (h *Handler) LoginUser(ctx context.Context, in *pb.LoginUserRequest) (*pb.L
 		Password: in.Password,
 	}
 	// call grpcService.User.Login() and check for err.
-	token, err = h.grpcService.User.Login(ctx, &userData)
+	token, err := h.grpcService.User.Login(ctx, &userData)
 	// if error found return empity string and error.
 	if err != nil {
 		return nil, err
 	}
 	// else return token and empty error.
-	return &pb.LoginUserResponse{token: token}, nil
+	return &pb.LoginUserResponse{Token: token}, nil
 }
 
 func (h *Handler) AuthUser(ctx context.Context, in *pb.AuthUserRequest) (*pb.AuthUserResponse, error) {
@@ -46,7 +46,8 @@ func (h *Handler) AuthUser(ctx context.Context, in *pb.AuthUserRequest) (*pb.Aut
 		Id:         userData.Id,
 		Name:       userData.Name,
 		Email:      userData.Email,
-		CreatedAt:  userData.CreatedAt,
+		Role:       userData.Role.Name,
+		CreatedOn:  userData.CreatedAt,
 		IsVerified: userData.IsVerified,
 	}
 	return &userRes, nil
@@ -74,7 +75,7 @@ func (h *Handler) UpdateUserPassword(ctx context.Context, in *pb.UpdateUserPassw
 	token := in.Token
 	password := in.Password
 
-	if err := h.grpcService.User.UpdatePassword(ctx, email, password); err != nil {
+	if err := h.grpcService.User.UpdatePassword(ctx, token, password); err != nil {
 		return nil, err
 	}
 	return &pb.UpdateUserPasswordResponse{Msg: "Password updated."}, nil
