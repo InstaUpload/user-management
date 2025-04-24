@@ -13,8 +13,6 @@ type EmailSender struct {
 	producer sarama.SyncProducer
 }
 
-const EMAIL_TOPIC = "email_topic"
-
 func (e *EmailSender) SendVerification(*types.SendVerificationKM) error {
 	return errors.New("Kafka send Verification Email function is UnImplemented")
 }
@@ -26,13 +24,13 @@ func (e *EmailSender) SendWelcome(message *types.SendWelcomeEmailKM) error {
 		return err
 	}
 	msg := &sarama.ProducerMessage{
-		Topic: EMAIL_TOPIC,
+		Topic: types.VerificationKT,
 		Value: sarama.StringEncoder(messageInBytes),
 	}
 	partition, offset, err := e.producer.SendMessage(msg)
 	if err != nil {
 		return err
 	}
-	log.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", EMAIL_TOPIC, partition, offset)
+	log.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", types.VerificationKT, partition, offset)
 	return nil
 }
