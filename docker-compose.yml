@@ -22,5 +22,12 @@ services:
     ports:
       - 8080:8080
 
+  broker:
+    image: apache/kafka:4.0.0
+    container_name: broker
+    ports:
+      - "9092:9092"
+
+
 volumes:
   pgdata:

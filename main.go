@@ -6,6 +6,7 @@ import (
 	"net"
 
 	pb "github.com/InstaUpload/common/api"
+	"github.com/InstaUpload/user-management/broker"
 	"github.com/InstaUpload/user-management/service"
 	"github.com/InstaUpload/user-management/store"
 	"github.com/InstaUpload/user-management/store/database"
@@ -39,12 +40,21 @@ func main() {
 		log.Fatalf("Can not connect to database %v \n", err)
 	}
 	defer db.Close()
+	// Setting up kafka producer.
+	brokers := []string{"localhost:9092"}
+	producer, err := broker.ConnectProducer(brokers)
+	if err != nil {
+		log.Fatalf("Can not connect to kafka producer %v \n", err)
+	}
+	defer producer.Close()
 	// Setting up store.
 	dbStore := store.NewStore(db)
 	// Setting up service.
 	grpcService := service.NewService(&dbStore)
+	// Setting up kafka sender.
+	sender := broker.NewSender(producer)
 	// Setting up handler.
-	handler := NewHandler(&grpcService)
+	handler := NewHandler(&grpcService, &sender)
 	// Setting up grpc server.
 	grpcAddress := utils.GetEnvString("USERSERVICEADDRESS", "localhost:5003")
 	l, err := net.Listen("tcp", grpcAddress)

@@ -27,7 +27,7 @@ type Service struct {
 }
 
 func NewService(dbstore *store.Store) Service {
-	// TODO: below lines needs to be update to add time and secret for password reset.
+	// below lines needs to be update to add time and secret for password reset.
 	expTime := time.Now().Add(time.Hour * time.Duration(utils.GetEnvInt("JWTEXPHR", 24))).Unix()
 	passwordExpTime := time.Now().Add(time.Second * time.Duration(utils.GetEnvInt("JWTPASSWORDEXPTIME", 240))).Unix()
 	verifyExpTime := time.Now().Add(time.Hour * time.Duration(utils.GetEnvInt("JWTVERIFYEXPTIME", 240))).Unix()

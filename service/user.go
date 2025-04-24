@@ -212,7 +212,7 @@ func (s *UserService) UpdatePassword(ctx context.Context, token, newPass string)
 func (s *UserService) Verify(ctx context.Context, token string) error {
 	var user types.User
 	// Parse the token. to get the user id.
-	// TODO: Need to create ParseseVerifyToken function in jwtService to return user id.
+	// Need to create ParseseVerifyToken function in jwtService to return user id.
 	userId, err := s.jwtService.ParseVerifyToken(token)
 	if err != nil {
 		// check the error message and return error accordingly.
@@ -258,6 +258,8 @@ func (s *UserService) SendVerification(ctx context.Context) (string, error) {
 }
 
 func (s *UserService) AddEditor(ctx context.Context, userId int64) error {
+	// TODO: Need to recheck this function.
+	// TODO: Maybe add a send invitation mail to add as editor
 	// Get current user from ctx.
 	currentUser := ctx.Value(CurrentUser).(types.User)
 	// Check if user id passed is same as current user id, if same return an error.

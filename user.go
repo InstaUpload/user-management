@@ -5,6 +5,7 @@ import (
 
 	pb "github.com/InstaUpload/common/api"
 	"github.com/InstaUpload/user-management/types"
+	"github.com/InstaUpload/user-management/utils"
 )
 
 func (h *Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -47,7 +48,7 @@ func (h *Handler) AuthUser(ctx context.Context, in *pb.AuthUserRequest) (*pb.Aut
 		Name:       userData.Name,
 		Email:      userData.Email,
 		Role:       userData.Role.Name,
-		CreatedOn:  userData.CreatedAt,
+		CreatedOn:  utils.TimeToString(&userData.CreatedOn),
 		IsVerified: userData.IsVerified,
 	}
 	return &userRes, nil
@@ -62,13 +63,13 @@ func (h *Handler) UpdateUserRole(ctx context.Context, in *pb.UpdateUserRoleReque
 	return &pb.UpdateUserRoleResponse{Msg: "User role updated"}, nil
 }
 
-func (h *Handler) ResetUserPassword(ctx context.Context, in *pb.ResetUserPasswordRequest) (*pb.ResetUserPasswordRespons, error) {
+func (h *Handler) ResetUserPassword(ctx context.Context, in *pb.ResetUserPasswordRequest) (*pb.ResetUserPasswordResponse, error) {
 	email := in.Email
 	_, err := h.grpcService.User.ResetPassword(ctx, email)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ResetUserPasswordResponse{Msg: "Email send to registered email address."}, nil
+	return &pb.ResetUserPasswordResponse{Msg: "Email sent to registered email address."}, nil
 }
 
 func (h *Handler) UpdateUserPassword(ctx context.Context, in *pb.UpdateUserPasswordRequest) (*pb.UpdateUserPasswordResponse, error) {
@@ -79,4 +80,31 @@ func (h *Handler) UpdateUserPassword(ctx context.Context, in *pb.UpdateUserPassw
 		return nil, err
 	}
 	return &pb.UpdateUserPasswordResponse{Msg: "Password updated."}, nil
+}
+
+func (h *Handler) VerifyUser(ctx context.Context, in *pb.VerifyUserRequest) (*pb.VerifyUserResponse, error) {
+	token := in.Token
+	if err := h.grpcService.User.Verify(ctx, token); err != nil {
+		return nil, err
+	}
+	return &pb.VerifyUserResponse{Msg: "User verified."}, nil
+}
+
+func (h *Handler) SendVerification(ctx context.Context, in *pb.SendVerificationUserRequest) (*pb.SendVerificationUserResponse, error) {
+	// TODO: Maybe add the Kafka producer to send email in handler struct.
+	// TODO: get token from send verification menthod and send it to the user.
+	// TODO: using kafka.
+	_, err := h.grpcService.User.SendVerification(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.SendVerificationUserResponse{}, nil
+}
+
+func (h *Handler) AddEditorUser(ctx context.Context, in *pb.AddEditorUserRequest) (*pb.AddEditorUserResponse, error) {
+	userId := in.UserId
+	if err := h.grpcService.User.AddEditor(ctx, userId); err != nil {
+		return nil, err
+	}
+	return &pb.AddEditorUserResponse{}, nil
 }

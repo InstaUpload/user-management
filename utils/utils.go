@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func GetEnvString(key, fallback string) string {
@@ -34,4 +35,11 @@ func GetSuperUsers() []string {
 	} else {
 		return strings.Split(superUsers, ",")
 	}
+}
+
+func TimeToString(t *time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(time.DateTime)
 }
