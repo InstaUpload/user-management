@@ -35,6 +35,7 @@ func (s *UserService) Create(ctx context.Context, userPayload *types.CreateUserP
 		log.Printf("invalid user data: %v", err)
 		return common.ErrIncorrectDataReceived
 	}
+	log.Println("service/user.go:38 User data is valid")
 	// below section needs to be automated.
 	var user types.User
 	user.Name = userPayload.Name

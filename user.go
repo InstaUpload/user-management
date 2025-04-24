@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 
 	pb "github.com/InstaUpload/common/api"
 	"github.com/InstaUpload/user-management/types"
@@ -16,6 +17,14 @@ func (h *Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb
 		Password: in.Password,
 	}
 	if err := h.grpcService.User.Create(ctx, &userData); err != nil {
+		return nil, err
+	}
+	// Sending message to send welcome email.
+	var sendWelcome types.SendWelcomeEmailKM
+	sendWelcome.Name = in.Name
+	sendWelcome.Email = in.Email
+	if err := h.messageSender.Email.SendWelcome(&sendWelcome); err != nil {
+		log.Printf("Error sending welcome email: %s", err.Error())
 		return nil, err
 	}
 	return &pb.CreateUserResponse{Msg: "User created successfully"}, nil
@@ -94,8 +103,13 @@ func (h *Handler) SendVerification(ctx context.Context, in *pb.SendVerificationU
 	// TODO: Maybe add the Kafka producer to send email in handler struct.
 	// TODO: get token from send verification menthod and send it to the user.
 	// TODO: using kafka.
-	_, err := h.grpcService.User.SendVerification(ctx)
+	token, err := h.grpcService.User.SendVerification(ctx)
 	if err != nil {
+		return nil, err
+	}
+	var sendVerification types.SendVerificationKM
+	sendVerification.Token = token
+	if err := h.messageSender.Email.SendVerification(&sendVerification); err != nil {
 		return nil, err
 	}
 	return &pb.SendVerificationUserResponse{}, nil

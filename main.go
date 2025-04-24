@@ -40,6 +40,7 @@ func main() {
 		log.Fatalf("Can not connect to database %v \n", err)
 	}
 	defer db.Close()
+	database.Setup(&dbConfig)
 	// Setting up kafka producer.
 	brokers := []string{"localhost:9092"}
 	producer, err := broker.ConnectProducer(brokers)

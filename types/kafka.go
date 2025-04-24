@@ -6,6 +6,10 @@ package types
 var SendVerificationKT string = "VerifyUser"
 
 type SendVerificationKM struct {
-	UserId int64  `json:"user_id"`
-	Token  string `json:"token"`
+	Token string `json:"token"`
+}
+
+type SendWelcomeEmailKM struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }

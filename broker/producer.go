@@ -2,6 +2,7 @@ package broker
 
 import (
 	"github.com/IBM/sarama"
+	"github.com/InstaUpload/user-management/types"
 )
 
 func ConnectProducer(brokers []string) (sarama.SyncProducer, error) {
@@ -15,7 +16,8 @@ func ConnectProducer(brokers []string) (sarama.SyncProducer, error) {
 
 type Sender struct {
 	Email interface {
-		SendVerificationEmail() error
+		SendVerification(*types.SendVerificationKM) error
+		SendWelcome(*types.SendWelcomeEmailKM) error
 	}
 }
 
