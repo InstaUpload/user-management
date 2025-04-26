@@ -26,8 +26,8 @@ func Setup(dbConfig *types.DatabaseConfig) error {
 	}
 	if err := m.Up(); err != nil {
 		if err != migrate.ErrNoChange {
-		log.Fatalf("Migration error, %v", err)
-	}
+			log.Fatalf("Migration error, %v", err)
+		}
 	}
 	migratedVersion, dirty, err := m.Version()
 	if err != nil {

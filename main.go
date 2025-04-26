@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 
 	pb "github.com/InstaUpload/common/api"
 	"github.com/InstaUpload/user-management/broker"
@@ -49,12 +50,23 @@ func main() {
 		log.Fatalf("Can not connect to kafka producer %v \n", err)
 	}
 	defer producer.Close()
+	// Setting up kafka consumer.
+	consumer, err := broker.ConnectConsumer(brokers)
+	if err != nil {
+		log.Fatalf("Can not connect to kafka consumer %v \n", err)
+	}
+	defer consumer.Close()
+	var wg sync.WaitGroup
 	// Setting up store.
 	dbStore := store.NewStore(db)
 	// Setting up service.
 	grpcService := service.NewService(&dbStore)
 	// Setting up broker sender.
 	sender := broker.NewSender(producer)
+	// Setting up broker recevier.
+	recevier := broker.NewReceiver(consumer)
+	wg.Add(1)
+	go recevier.Run(&wg)
 	// Setting up handler.
 	handler := NewHandler(&grpcService, &sender)
 	// Setting up grpc server.
@@ -71,4 +83,5 @@ func main() {
 	if err := s.Serve(l); err != nil {
 		log.Fatal(err.Error())
 	}
+	wg.Wait()
 }
