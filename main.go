@@ -17,12 +17,13 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello from User Management System")
+	log.Println("Hello from User Management System")
+	// Loading environment variables.
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	// Setting up the database.
+	// Setting up the database configration.
 	dbConfig := types.DatabaseConfig{
 		User:             utils.GetEnvString("DATABASEUSER", "user"),
 		Password:         utils.GetEnvString("DATABASEPASSWORD", "user"),
@@ -52,7 +53,7 @@ func main() {
 	dbStore := store.NewStore(db)
 	// Setting up service.
 	grpcService := service.NewService(&dbStore)
-	// Setting up kafka sender.
+	// Setting up broker sender.
 	sender := broker.NewSender(producer)
 	// Setting up handler.
 	handler := NewHandler(&grpcService, &sender)
