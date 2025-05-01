@@ -4,6 +4,7 @@ This repo/module deals with everyting releated to users of InstaUpload.
 
 ## Note:
 - *For config structs, no need to send pointer* if config struct is not expected to update(mutate) the values. *Only send struct as is*, even if it means creating a shallow copy in memory.
+- On the authenticated function user is expected in context, Make sure that full user oject is passed on as in functions like `SendVerification` user information is required.
 
 ## TODO:
 
@@ -47,3 +48,6 @@ This repo/module deals with everyting releated to users of InstaUpload.
 		- [x] Add functionality to send Email.
 		- [ ] Add welcome message template.
 	- [ ] Add functionality to send varification mail to user on visiting `SendVerification` function.
+
+- ### AddEditor User.
+	- [ ] Re-write function to add user, Basically creater should click on add button which will then send notification to User that creater __*name*__ has requested to add you as a editor.

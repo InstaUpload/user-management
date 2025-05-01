@@ -20,10 +20,10 @@ func (h *Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb
 		return nil, err
 	}
 	// Sending message to send welcome email.
-	var sendWelcome types.SendWelcomeEmailKM
-	sendWelcome.Name = in.Name
-	sendWelcome.Email = in.Email
-	if err := h.messageSender.Email.SendWelcome(&sendWelcome); err != nil {
+	var welcomeMsg types.SendWelcomeEmailKM
+	welcomeMsg.Name = in.Name
+	welcomeMsg.Email = in.Email
+	if err := h.messageSender.Email.SendWelcome(&welcomeMsg); err != nil {
 		log.Printf("Error sending welcome email: %s", err.Error())
 		return nil, err
 	}
@@ -107,9 +107,13 @@ func (h *Handler) SendVerification(ctx context.Context, in *pb.SendVerificationU
 	if err != nil {
 		return nil, err
 	}
-	var sendVerification types.SendVerificationKM
-	sendVerification.Token = token
-	if err := h.messageSender.Email.SendVerification(&sendVerification); err != nil {
+	currentUser := ctx.Value(CurrentUser).(types.User)
+	var verificationMsg types.SendVerificationKM
+	verificationMsg.Token = token
+	verificationMsg.Name = currentUser.Name
+	verificationMsg.Email = currentUser.Email
+	if err := h.messageSender.Email.SendVerification(&verificationMsg); err != nil {
+		log.Printf("Error sending welcome email: %s", err.Error())
 		return nil, err
 	}
 	return &pb.SendVerificationUserResponse{}, nil

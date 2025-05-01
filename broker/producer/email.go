@@ -2,7 +2,6 @@ package producer
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 
 	"github.com/IBM/sarama"
@@ -13,8 +12,23 @@ type EmailSender struct {
 	producer sarama.SyncProducer
 }
 
-func (e *EmailSender) SendVerification(*types.SendVerificationKM) error {
-	return errors.New("Kafka send Verification Email function is UnImplemented")
+func (e *EmailSender) SendVerification(message *types.SendVerificationKM) error {
+	messageInBytes, err := json.Marshal(&message)
+	key := []byte(types.MailVerificationKey)
+	if err != nil {
+		return err
+	}
+	msg := &sarama.ProducerMessage{
+		Topic: types.EmailUserKT,
+		Value: sarama.StringEncoder(messageInBytes),
+		Key:   sarama.StringEncoder(key),
+	}
+	partition, offset, err := e.producer.SendMessage(msg)
+	if err != nil {
+		return err
+	}
+	log.Printf("broker/producer/email.go|l:31 Message is stored in topic(%s)/partition(%d)/offset(%d)\n", types.EmailUserKT, partition, offset)
+	return nil
 }
 
 func (e *EmailSender) SendWelcome(message *types.SendWelcomeEmailKM) error {
@@ -33,6 +47,6 @@ func (e *EmailSender) SendWelcome(message *types.SendWelcomeEmailKM) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", types.EmailUserKT, partition, offset)
+	log.Printf("broker/producer/email.go|l:52 Message is stored in topic(%s)/partition(%d)/offset(%d)\n", types.EmailUserKT, partition, offset)
 	return nil
 }

@@ -7,6 +7,8 @@ const EmailUserKT = "EmailUser"
 
 type SendVerificationKM struct {
 	Token string `json:"token"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type SendWelcomeEmailKM struct {

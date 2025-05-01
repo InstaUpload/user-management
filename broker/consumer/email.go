@@ -15,6 +15,7 @@ type EmailReceiver struct {
 	worker     sarama.PartitionConsumer
 	mailSender interface {
 		SendWelcome(*types.SendWelcomeEmailKM)
+		SendVerification(*types.SendVerificationKM)
 	}
 }
 
@@ -43,7 +44,6 @@ func (e *EmailReceiver) Listen(wg *sync.WaitGroup) {
 	defer wg.Done()
 	for {
 		msg := <-e.worker.Messages()
-		// NOTE: All message that are send to
 		if string(msg.Key) == types.MailWelcomeKey {
 			// Decode string(msg.Value) to types.SendWelcomeEmailKM and store it in data variable.
 			data := types.SendWelcomeEmailKM{}
@@ -52,6 +52,15 @@ func (e *EmailReceiver) Listen(wg *sync.WaitGroup) {
 				continue
 			}
 			go e.mailSender.SendWelcome(&data)
+		}
+		if string(msg.key) == types.MailVerificationKey {
+			data := types.SendVerificationKM{}
+			data := types.SendWelcomeEmailKM{}
+			if err := json.Unmarshal(msg.Value, &data); err != nil {
+				log.Printf("broker/consumer/email.go| Error unmarshalling message value: %s", err.Error())
+				continue
+			}
+			go e.mailSender.SendVerification(&data)
 		}
 	}
 }
