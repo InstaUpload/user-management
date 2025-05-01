@@ -3,7 +3,7 @@ package types
 // NOTE: KT stands for Kafka Topic.
 // NOTE: KM stands for Kafka Message.
 
-const VerificationKT = "VerifyUser"
+const EmailUserKT = "EmailUser"
 
 type SendVerificationKM struct {
 	Token string `json:"token"`

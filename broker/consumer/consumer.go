@@ -9,7 +9,6 @@ import (
 type Receiver struct {
 	Email interface {
 		Listen(*sync.WaitGroup)
-		ReceiveVerification() error
 	}
 }
 

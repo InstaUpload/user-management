@@ -25,6 +25,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	// Setting up the database configration.
+	// NOTE: Maybe make a config file for all the configrations needed in this application.
+	// NOTE: Config includes database config, kafka config, etc.
 	dbConfig := types.DatabaseConfig{
 		User:             utils.GetEnvString("DATABASEUSER", "user"),
 		Password:         utils.GetEnvString("DATABASEPASSWORD", "user"),

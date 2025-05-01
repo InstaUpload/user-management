@@ -20,17 +20,19 @@ func (e *EmailSender) SendVerification(*types.SendVerificationKM) error {
 func (e *EmailSender) SendWelcome(message *types.SendWelcomeEmailKM) error {
 	// use json.Marshal() to convert the struct to json and send it to kafka topic.
 	messageInBytes, err := json.Marshal(&message)
+	key := []byte(types.MailWelcomeKey)
 	if err != nil {
 		return err
 	}
 	msg := &sarama.ProducerMessage{
-		Topic: types.VerificationKT,
+		Topic: types.EmailUserKT,
 		Value: sarama.StringEncoder(messageInBytes),
+		Key:   sarama.StringEncoder(key),
 	}
 	partition, offset, err := e.producer.SendMessage(msg)
 	if err != nil {
 		return err
 	}
-	log.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", types.VerificationKT, partition, offset)
+	log.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", types.EmailUserKT, partition, offset)
 	return nil
 }
