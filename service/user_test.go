@@ -9,8 +9,6 @@ import (
 	"github.com/InstaUpload/user-management/types"
 )
 
-const TestUser CurrentUserKey = "CurrentUser"
-
 var testUsers = []struct {
 	Name          string
 	Email         string
@@ -108,7 +106,7 @@ func TestAuth(t *testing.T) {
 				t.Errorf("Expected user id %d but got %d", user.Id, 0)
 			}
 			if user.Role.Name == "admin" {
-				testCtx = context.WithValue(testCtx, TestUser, user)
+				testCtx = context.WithValue(testCtx, common.CurrentUserKey, user)
 			}
 		})
 		token = token + "invalid"

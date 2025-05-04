@@ -53,9 +53,8 @@ func (e *EmailReceiver) Listen(wg *sync.WaitGroup) {
 			}
 			go e.mailSender.SendWelcome(&data)
 		}
-		if string(msg.key) == types.MailVerificationKey {
+		if string(msg.Key) == types.MailVerificationKey {
 			data := types.SendVerificationKM{}
-			data := types.SendWelcomeEmailKM{}
 			if err := json.Unmarshal(msg.Value, &data); err != nil {
 				log.Printf("broker/consumer/email.go| Error unmarshalling message value: %s", err.Error())
 				continue

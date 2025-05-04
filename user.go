@@ -5,9 +5,14 @@ import (
 	"log"
 
 	pb "github.com/InstaUpload/common/api"
+	common "github.com/InstaUpload/common/types"
 	"github.com/InstaUpload/user-management/types"
 	"github.com/InstaUpload/user-management/utils"
 )
+
+type CurrentUserKey string
+
+const CurrentUser CurrentUserKey = "CurrentUser"
 
 func (h *Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	// convert in to UserPayload.
@@ -100,14 +105,13 @@ func (h *Handler) VerifyUser(ctx context.Context, in *pb.VerifyUserRequest) (*pb
 }
 
 func (h *Handler) SendVerification(ctx context.Context, in *pb.SendVerificationUserRequest) (*pb.SendVerificationUserResponse, error) {
-	// TODO: Maybe add the Kafka producer to send email in handler struct.
-	// TODO: get token from send verification menthod and send it to the user.
-	// TODO: using kafka.
+	authUser := ctx.Value(CurrentUser).(pb.AuthUserResponse)
+	currentUser := convertCurrentUser(&authUser)
+	ctx = context.WithValue(ctx, common.CurrentUserKey, currentUser)
 	token, err := h.grpcService.User.SendVerification(ctx)
 	if err != nil {
 		return nil, err
 	}
-	currentUser := ctx.Value(CurrentUser).(types.User)
 	var verificationMsg types.SendVerificationKM
 	verificationMsg.Token = token
 	verificationMsg.Name = currentUser.Name
@@ -125,4 +129,17 @@ func (h *Handler) AddEditorUser(ctx context.Context, in *pb.AddEditorUserRequest
 		return nil, err
 	}
 	return &pb.AddEditorUserResponse{}, nil
+}
+
+func convertCurrentUser(in *pb.AuthUserResponse) types.User {
+	var currentUser types.User
+	currentUser.Id = in.GetId()
+	currentUser.Name = in.GetName()
+	currentUser.Email = in.GetEmail()
+	currentUser.Role.Name = in.GetRole()
+	currentUser.IsVerified = in.GetIsVerified()
+	// TODO: Work on CreatedOn time. identify whats the string format for it and use the format to convert back to time.Time
+
+	return currentUser
+
 }

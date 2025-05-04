@@ -39,15 +39,19 @@ This repo/module deals with everyting releated to users of InstaUpload.
 - ### Update User Role.
 	- [x] Add test to test the functionality to update the user role.
 	- [x] Add database migration files to add and remove roles table and alter users table.
-	- [ ] Update Auth function to return user role as well.
+	- [x] Update Auth function to return user role as well.
 	- [ ] Update gRPC Auth function response to send role as well.
 	- [x] Add function in storage layer to update the role based on the given string.
 
 - ### Message Broker.
-	- [ ] Add Welcome email to be send when user creates an account.
+	- [x] Add Welcome email to be send when user creates an account.
 		- [x] Add functionality to send Email.
-		- [ ] Add welcome message template.
+		- [x] Add welcome message template.
 	- [ ] Add functionality to send varification mail to user on visiting `SendVerification` function.
+		- [x] Add welcome message template.
 
 - ### AddEditor User.
 	- [ ] Re-write function to add user, Basically creater should click on add button which will then send notification to User that creater __*name*__ has requested to add you as a editor.
+
+- ### Maybe need to convert pb.AuthUserResponse to type.User on every request that is expecting user in context.
+	- [ ] Add this function call to all the endpoints that are expecting user in context.

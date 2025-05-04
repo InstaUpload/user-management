@@ -12,10 +12,6 @@ import (
 	"github.com/InstaUpload/user-management/utils"
 )
 
-type CurrentUserKey string
-
-const CurrentUser CurrentUserKey = "CurrentUser"
-
 type UserService struct {
 	dbstore    *store.Store
 	jwtService interface {
@@ -133,7 +129,7 @@ func (s *UserService) Auth(ctx context.Context, token string) (types.User, error
 
 func (s *UserService) UpdateRole(ctx context.Context, userId int64, roleName string) error {
 	// Check if current user has admin role. or current user is one of super admin users.
-	currentUser := ctx.Value(CurrentUser).(types.User)
+	currentUser := ctx.Value(common.CurrentUserKey).(types.User)
 	if currentUser.Role.Name != "admin" {
 		return common.ErrIncorrectDataReceived
 	}
@@ -247,7 +243,7 @@ func (s *UserService) Verify(ctx context.Context, token string) error {
 
 func (s *UserService) SendVerification(ctx context.Context) (string, error) {
 	// Check if current user has admin role. or current user is one of super admin users.
-	currentUser := ctx.Value(CurrentUser).(types.User)
+	currentUser := ctx.Value(common.CurrentUserKey).(types.User)
 	token, err := s.jwtService.GenerateVerifyToken(currentUser.Id)
 	if err != nil {
 		log.Printf("err: %s", err.Error())
@@ -262,7 +258,7 @@ func (s *UserService) AddEditor(ctx context.Context, userId int64) error {
 	// TODO: Need to recheck this function.
 	// TODO: Maybe add a send invitation mail to add as editor
 	// Get current user from ctx.
-	currentUser := ctx.Value(CurrentUser).(types.User)
+	currentUser := ctx.Value(common.CurrentUserKey).(types.User)
 	// Check if user id passed is same as current user id, if same return an error.
 	var user types.User
 	user.Id = userId
