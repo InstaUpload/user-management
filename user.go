@@ -10,10 +10,6 @@ import (
 	"github.com/InstaUpload/user-management/utils"
 )
 
-type CurrentUserKey string
-
-const CurrentUser CurrentUserKey = "CurrentUser"
-
 func (h *Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	// convert in to UserPayload.
 	userData := types.CreateUserPayload{
@@ -104,12 +100,13 @@ func (h *Handler) VerifyUser(ctx context.Context, in *pb.VerifyUserRequest) (*pb
 	return &pb.VerifyUserResponse{Msg: "User verified."}, nil
 }
 
-func (h *Handler) SendVerification(ctx context.Context, in *pb.SendVerificationUserRequest) (*pb.SendVerificationUserResponse, error) {
-	authUser := ctx.Value(CurrentUser).(pb.AuthUserResponse)
-	currentUser := convertCurrentUser(&authUser)
+func (h *Handler) SendVerificationUser(ctx context.Context, in *pb.SendVerificationUserRequest) (*pb.SendVerificationUserResponse, error) {
+	currentUser := convertCurrentUser(in.CurrentUser)
 	ctx = context.WithValue(ctx, common.CurrentUserKey, currentUser)
 	token, err := h.grpcService.User.SendVerification(ctx)
 	if err != nil {
+		// TODO: Delete log the error.
+		log.Printf("Error sending verification email: from service layer. %s", err.Error())
 		return nil, err
 	}
 	var verificationMsg types.SendVerificationKM
@@ -138,7 +135,8 @@ func convertCurrentUser(in *pb.AuthUserResponse) types.User {
 	currentUser.Email = in.GetEmail()
 	currentUser.Role.Name = in.GetRole()
 	currentUser.IsVerified = in.GetIsVerified()
-	// TODO: Work on CreatedOn time. identify whats the string format for it and use the format to convert back to time.Time
+	// Work on CreatedOn time. identify whats the string format for it and use the format to convert back to time.Time
+	currentUser.CreatedOn = utils.StringToTime(in.GetCreatedOn())
 
 	return currentUser
 

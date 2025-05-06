@@ -43,3 +43,14 @@ func TimeToString(t *time.Time) string {
 	}
 	return t.Format(time.DateTime)
 }
+
+func StringToTime(s string) time.Time {
+	if s == "" {
+		return time.Time{}
+	}
+	t, err := time.Parse(time.DateTime, s)
+	if err != nil {
+		return time.Time{}
+	}
+	return t
+}

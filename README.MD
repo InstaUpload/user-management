@@ -4,9 +4,16 @@ This repo/module deals with everyting releated to users of InstaUpload.
 
 ## Note:
 - *For config structs, no need to send pointer* if config struct is not expected to update(mutate) the values. *Only send struct as is*, even if it means creating a shallow copy in memory.
-- On the authenticated function user is expected in context, Make sure that full user oject is passed on as in functions like `SendVerification` user information is required.
+- On the *authenticated function user is expected in context*, Make sure that full user object is passed on as in functions like `SendVerification` user information is required *This is for service layer*.
+- It seems context with custome value is not passed down from gRPC client to gRPC server, so we need to pass the user object in every function that is expecting user in context. As well as we need to convert `pb.AuthUserResponse` to `type.User` on every request that is expecting user in context.
 
 ## TODO:
+
+- ### In handler layer, For every authenticated function *in* parameter should take in *AuthUserResponse and this user will be stored in context which then will be passed on to service layer.
+	- [x] Implement this in SendVerification function. 
+
+- ### Maybe need to convert pb.AuthUserResponse to type.User on every request that is expecting user in context.
+	- [x] Implement this in SendVerification function.
 
 - ### Test.
 	- [x] Create a global context that can be used by all the test functions.
@@ -29,7 +36,6 @@ This repo/module deals with everyting releated to users of InstaUpload.
 	- [x] Add code to add user in database.
 	- [x] Add function to create superadmin users, and update the role to admin.
 	- [ ] After user is successfuly created maybe in gateway service redirect user to `login` then to `SendVerification` endpoint.
-	- [ ] After user is successfuly created send Welcome email to user.
 
 - ### Login User.
 	- [x] Add test to test the functionality to login user.
@@ -40,18 +46,15 @@ This repo/module deals with everyting releated to users of InstaUpload.
 	- [x] Add test to test the functionality to update the user role.
 	- [x] Add database migration files to add and remove roles table and alter users table.
 	- [x] Update Auth function to return user role as well.
-	- [ ] Update gRPC Auth function response to send role as well.
+	- [x] Update gRPC Auth function response to send role as well.
 	- [x] Add function in storage layer to update the role based on the given string.
 
 - ### Message Broker.
 	- [x] Add Welcome email to be send when user creates an account.
 		- [x] Add functionality to send Email.
 		- [x] Add welcome message template.
-	- [ ] Add functionality to send varification mail to user on visiting `SendVerification` function.
+	- [x] Add functionality to send varification mail to user on visiting `SendVerification` function.
 		- [x] Add welcome message template.
 
 - ### AddEditor User.
-	- [ ] Re-write function to add user, Basically creater should click on add button which will then send notification to User that creater __*name*__ has requested to add you as a editor.
-
-- ### Maybe need to convert pb.AuthUserResponse to type.User on every request that is expecting user in context.
-	- [ ] Add this function call to all the endpoints that are expecting user in context.
+	- [ ] Re-write function to add user, Basically creater should click on add button which will then send notification to User(editor) that creater __*name*__ has requested to add you as a editor.

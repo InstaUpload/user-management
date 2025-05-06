@@ -17,12 +17,12 @@ type Service struct {
 		Create(context.Context, *types.CreateUserPayload) error
 		Login(context.Context, *types.LoginUserPayload) (string, error)
 		Auth(context.Context, string) (types.User, error)
-		UpdateRole(context.Context, int64, string) error
+		UpdateRole(context.Context, int64, string) error // NOTE: Authenticated function.
 		ResetPassword(context.Context, string) (string, error)
 		UpdatePassword(context.Context, string, string) error
 		Verify(context.Context, string) error
-		SendVerification(context.Context) (string, error)
-		AddEditor(context.Context, int64) error
+		SendVerification(context.Context) (string, error) // NOTE: Authenticated function.
+		AddEditor(context.Context, int64) error           // NOTE: Authenticated function.
 	}
 }
 
