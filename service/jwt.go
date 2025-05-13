@@ -8,12 +8,14 @@ import (
 )
 
 type JWTService struct {
-	authExpire     time.Time
-	authSecret     []byte
-	passwordExpire time.Time
-	passwordSecret []byte
-	verifyExpire   time.Time
-	verifySecret   []byte
+	authExpire          time.Time
+	authSecret          []byte
+	passwordExpire      time.Time
+	passwordSecret      []byte
+	verifyExpire        time.Time
+	verifySecret        []byte
+	editorRequestExpire time.Time
+	editorRequestSecret []byte
 }
 
 func (j *JWTService) GenerateAuthToken(userId int64) (string, error) {
@@ -78,6 +80,30 @@ func (j *JWTService) ParseVerifyToken(token string) (int64, error) {
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return j.verifySecret, nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	strUserId := claims["userId"].(string)
+	userId, err := strconv.ParseInt(strUserId, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return userId, nil
+}
+
+func (j *JWTService) GenerateEditorReqToken(userId int64) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId":    strconv.FormatInt(userId, 10),
+		"expiredAt": j.editorRequestExpire,
+	})
+	return token.SignedString(j.editorRequestSecret)
+}
+
+func (j *JWTService) ParseEditorReqToken(token string) (int64, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return j.editorRequestSecret, nil
 	})
 	if err != nil {
 		return 0, err

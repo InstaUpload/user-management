@@ -15,3 +15,9 @@ type SendWelcomeEmailKM struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 }
+
+type SendEditorRequestKM struct {
+	CreaterName string `json:"creater_name"`
+	EditorEmail string `json:"email"`
+	Token       string `json:"token"`
+}

@@ -11,9 +11,13 @@ This repo/module deals with everyting releated to users of InstaUpload.
 
 - ### In handler layer, For every authenticated function *in* parameter should take in *AuthUserResponse and this user will be stored in context which then will be passed on to service layer.
 	- [x] Implement this in SendVerification function. 
+	- [ ] Implement this in SendEditorRequest function. 
+	- [ ] Implement this in AddEditor function. 
 
 - ### Maybe need to convert pb.AuthUserResponse to type.User on every request that is expecting user in context.
 	- [x] Implement this in SendVerification function.
+	- [ ] Implement this in SendEditorRequest function. 
+	- [ ] Implement this in AddEditor function. 
 
 - ### Test.
 	- [x] Create a global context that can be used by all the test functions.
@@ -58,3 +62,8 @@ This repo/module deals with everyting releated to users of InstaUpload.
 
 - ### AddEditor User.
 	- [ ] Re-write function to add user, Basically creater should click on add button which will then send notification to User(editor) that creater __*name*__ has requested to add you as a editor.
+		- [x] Add functionality to genrate token.
+		- [ ] Add functionality to send email to editor.
+
+- ### Refactor.
+	- [ ] Have JWT interface at service struct and pass it to User service.

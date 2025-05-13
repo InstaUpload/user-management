@@ -21,6 +21,8 @@ type UserService struct {
 		ParsePasswordToken(string) (int64, error)
 		GenerateVerifyToken(int64) (string, error)
 		ParseVerifyToken(string) (int64, error)
+		GenerateEditorReqToken(int64) (string, error)
+		ParseEditorReqToken(string) (int64, error)
 	}
 }
 
@@ -252,30 +254,67 @@ func (s *UserService) SendVerification(ctx context.Context) (string, error) {
 	return token, nil
 }
 
-func (s *UserService) AddEditor(ctx context.Context, userId int64) error {
-	// TODO: Need to recheck this function.
-	// TODO: Maybe add a send invitation mail to add as editor
+func (s *UserService) AddEditor(ctx context.Context, token string) error {
+	// NOTE: Token will be passed on by the caller,
+	// NOTE: Token will contain the information on the creater's id.
+	// NOTE: CurrentUser will be treated as editor.
 	// Get current user from ctx.
-	currentUser := ctx.Value(common.CurrentUserKey).(types.User)
-	// Check if user id passed is same as current user id, if same return an error.
-	var user types.User
-	user.Id = userId
-	if err := s.dbstore.User.GetUserById(ctx, &user); err != nil {
-		if strings.Contains(err.Error(), "no rows") {
+	user := ctx.Value(common.CurrentUserKey).(types.User)
+	createrId, err := s.jwtService.ParseEditorReqToken(token)
+	if err != nil {
+		// check the error message and return error accordingly.
+		if strings.Contains(err.Error(), "token is expired") {
+			return common.ErrIncorrectDataReceived
+		} else if strings.Contains(err.Error(), "signature is invalid") {
 			return common.ErrDataNotFound
 		}
 	}
-	if userId == currentUser.Id {
+	if err := s.dbstore.User.AddEditorById(ctx, user.Id, createrId); err != nil {
 		return common.ErrIncorrectDataReceived
 	}
-	// Call add editor by id function of store
-	if err := s.dbstore.User.AddEditorById(ctx, currentUser.Id, userId); err != nil {
-		// check if error is of type "duplicate key" error.
-		if strings.Contains(err.Error(), "duplicate key") {
-			return common.ErrIncorrectDataReceived
-		}
-		log.Printf("err: %s", err.Error())
-		return err
-	}
+	// Check if user id passed is same as current user id, if same return an error.
 	return nil
+}
+
+func (s *UserService) SendEditorRequest(ctx context.Context, userId int64) (types.SendEditorRequestKM, error) {
+	currentUser := ctx.Value(common.CurrentUserKey).(types.User)
+	// Check if userId is same as current user id, if same return an error.
+	if userId == currentUser.Id {
+		return types.SendEditorRequestKM{}, common.ErrIncorrectDataReceived
+	}
+	// Check if userId exist in database. if not then return an error.
+	var editorInfo types.User
+	editorInfo.Id = userId
+	if err := s.dbstore.User.GetUserById(ctx, &editorInfo); err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return types.SendEditorRequestKM{}, common.ErrDataNotFound
+		}
+		// Write a better log message.
+		log.Printf("SendEditorRequest error in getting userid from database.: %s", err.Error())
+		return types.SendEditorRequestKM{}, err
+	}
+	// Add function in storage layer to check if user is already added as editor.
+	var editor types.Editor
+	editor.Id = userId
+	if err := s.dbstore.User.GetEditorById(ctx, currentUser.Id, &editor); err != nil {
+		if !strings.Contains(err.Error(), "no rows") {
+			return types.SendEditorRequestKM{}, common.ErrIncorrectDataReceived
+		}
+	}
+	// Need to create token.
+	// NOTE: Maybe here send the userid of current user.
+	// NOTE: Because when editor will click on accept request
+	// NOTE: The editor will add creator.
+	token, err := s.jwtService.GenerateEditorReqToken(currentUser.Id)
+	if err != nil {
+		log.Printf("err: %s", err.Error())
+		// TODO: To be updated to internal server error.
+		return types.SendEditorRequestKM{}, common.ErrDataNotFound
+	}
+	res := types.SendEditorRequestKM{
+		EditorEmail: editorInfo.Email,
+		CreaterName: currentUser.Name,
+		Token:       token,
+	}
+	return res, nil
 }

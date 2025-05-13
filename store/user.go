@@ -127,3 +127,17 @@ func (s *UserStore) AddEditorById(ctx context.Context, currentUserId, userId int
 	}
 	return nil
 }
+
+func (s *UserStore) GetEditorById(ctx context.Context, currentUserId int64, editor *types.Editor) error {
+	query, err := s.db.PrepareContext(ctx,
+		`SELECT user_id FROM editors WHERE user_id = $1 AND editor_id = $2`)
+	if err != nil {
+		return err
+	}
+	res := query.QueryRowContext(ctx, currentUserId, editor.Id)
+	// Maybe need to add a editor struct in types package.
+	if err := res.Scan(&editor.UserId); err != nil {
+		return err
+	}
+	return nil
+}

@@ -83,3 +83,8 @@ type Role struct {
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type Editor struct {
+	Id     int64 `json:"id"`
+	UserId int64 `json:"user_id"`
+}

@@ -16,6 +16,7 @@ type Store struct {
 		UpdateUserPassword(context.Context, *types.User) error
 		Verify(context.Context, *types.User) error
 		AddEditorById(context.Context, int64, int64) error
+		GetEditorById(context.Context, int64, *types.Editor) error
 	}
 }
 
