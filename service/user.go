@@ -313,7 +313,7 @@ func (s *UserService) SendEditorRequest(ctx context.Context, userId int64) (type
 	}
 	res := types.SendEditorRequestKM{
 		EditorEmail: editorInfo.Email,
-		CreaterName: currentUser.Name,
+		CreatorName: currentUser.Name,
 		Token:       token,
 	}
 	return res, nil

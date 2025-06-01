@@ -61,9 +61,9 @@ This repo/module deals with everyting releated to users of InstaUpload.
 		- [x] Add welcome message template.
 
 - ### AddEditor User.
-	- [ ] Re-write function to add user, Basically creater should click on add button which will then send notification to User(editor) that creater __*name*__ has requested to add you as a editor.
+	- [x] Re-write function to add user, Basically creater should click on add button which will then send notification to User(editor) that creater __*name*__ has requested to add you as a editor.
 		- [x] Add functionality to genrate token.
-		- [ ] Add functionality to send email to editor.
+		- [x] Add functionality to send email to editor.
 
 - ### Refactor.
 	- [ ] Have JWT interface at service struct and pass it to User service.

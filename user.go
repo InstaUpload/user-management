@@ -128,6 +128,22 @@ func (h *Handler) AddEditorUser(ctx context.Context, in *pb.AddEditorUserRequest
 	return &pb.AddEditorUserResponse{}, nil
 }
 
+func (h *Handler) SendEditorUser(ctx context.Context, in *pb.SendEditorUserRequest) (*pb.SendEditorUserResponse, error) {
+	currentUser := convertCurrentUser(in.CurrentUser)
+	ctx = context.WithValue(ctx, common.CurrentUserKey, currentUser)
+	editorId := in.UserId
+	editorMsg, err := h.grpcService.User.SendEditorRequest(ctx, editorId)
+	if err != nil {
+		log.Printf("Error sending editor email: from service layer. %s", err.Error())
+		return nil, err
+	}
+	if err := h.messageSender.Email.SendEditorInvite(&editorMsg); err != nil {
+		log.Printf("Error sending editor email: %s", err.Error())
+		return nil, err
+	}
+	return &pb.SendEditorUserResponse{}, nil
+}
+
 func convertCurrentUser(in *pb.AuthUserResponse) types.User {
 	var currentUser types.User
 	currentUser.Id = in.GetId()

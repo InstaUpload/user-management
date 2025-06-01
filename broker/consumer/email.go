@@ -16,6 +16,7 @@ type EmailReceiver struct {
 	mailSender interface {
 		SendWelcome(*types.SendWelcomeEmailKM)
 		SendVerification(*types.SendVerificationKM)
+		SendEditorInvite(*types.SendEditorRequestKM)
 	}
 }
 
@@ -60,6 +61,14 @@ func (e *EmailReceiver) Listen(wg *sync.WaitGroup) {
 				continue
 			}
 			go e.mailSender.SendVerification(&data)
+		}
+		if string(msg.Key) == types.MailEditorInviteKey {
+			data := types.SendEditorRequestKM{}
+			if err := json.Unmarshal(msg.Value, &data); err != nil {
+				log.Printf("broker/consumer/email.go| Error unmarshalling message value: %s", err.Error())
+				continue
+			}
+			go e.mailSender.SendEditorInvite(&data)
 		}
 	}
 }

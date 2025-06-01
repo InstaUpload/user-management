@@ -9,6 +9,7 @@ type Sender struct {
 	Email interface {
 		SendVerification(*types.SendVerificationKM) error
 		SendWelcome(*types.SendWelcomeEmailKM) error
+		SendEditorInvite(*types.SendEditorRequestKM) error
 	}
 }
 

@@ -55,7 +55,7 @@ func (g *GMailSender) SendWelcome(user *types.SendWelcomeEmailKM) {
 func (g *GMailSender) SendVerification(data *types.SendVerificationKM) {
 	// TODO: Get HTML template for verification email.
 	// TODO: pass on variable like token user's name.
-	urlToken := fmt.Sprintf("https://InstaUpload.com/user/verify?token=%s", data.Token)
+	urlToken := fmt.Sprintf("https://InstaUpload.com/users/verify?token=%s", data.Token)
 	tempVariable := struct {
 		UrlToken string
 	}{
@@ -81,6 +81,43 @@ func (g *GMailSender) SendVerification(data *types.SendVerificationKM) {
 		g.auth,
 		utils.GetEnvString("MAILSENDEREMAIL", "gpt.sahaj28@gmail.com"),
 		[]string{data.Email},
+		[]byte(message),
+	)
+	if err != nil {
+		log.Printf("Failed to send email: %s", err.Error())
+		return
+	}
+}
+
+func (g *GMailSender) SendEditorInvite(data *types.SendEditorRequestKM) {
+	urlToken := fmt.Sprintf("https://InstaUpload.com/users/add-editor?token=%s", data.Token)
+	tempVariable := struct {
+		UrlToken    string
+		CreatorName string
+	}{
+		UrlToken:    urlToken,
+		CreatorName: data.CreatorName,
+	}
+	var rendered bytes.Buffer
+	tmpl, err := template.ParseFiles("mail/templates/editorInvitation.html")
+	if err != nil {
+		log.Printf("Failed to parse template: %s", err.Error())
+		return
+	}
+	if err := tmpl.Execute(&rendered, tempVariable); err != nil {
+		log.Printf("Failed to execute template: %s", err.Error())
+		return
+	}
+	// Use the rendered HTML content in the email body
+	header := "MIME-version: 1.0;\n" + "Content-Type: text/html; charset=\"UTF-8\";\n"
+	message := fmt.Sprintf("Subject: Editor Invite in InstaUpload.\n%s\n\n%s", header, rendered.String())
+	host := utils.GetEnvString("MAILHOST", "smtp.example.com")
+	post := utils.GetEnvInt("MAILPORT", 587)
+	err = smtp.SendMail(
+		fmt.Sprintf("%s:%d", host, post),
+		g.auth,
+		utils.GetEnvString("MAILSENDEREMAIL", "gpt.sahaj28@gmail.com"),
+		[]string{data.EditorEmail},
 		[]byte(message),
 	)
 	if err != nil {
