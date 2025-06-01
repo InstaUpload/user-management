@@ -256,11 +256,11 @@ func (s *UserService) SendVerification(ctx context.Context) (string, error) {
 
 func (s *UserService) AddEditor(ctx context.Context, token string) error {
 	// NOTE: Token will be passed on by the caller,
-	// NOTE: Token will contain the information on the creater's id.
+	// NOTE: Token will contain the information on the creator's id.
 	// NOTE: CurrentUser will be treated as editor.
 	// Get current user from ctx.
 	user := ctx.Value(common.CurrentUserKey).(types.User)
-	createrId, err := s.jwtService.ParseEditorReqToken(token)
+	creatorId, err := s.jwtService.ParseEditorReqToken(token)
 	if err != nil {
 		// check the error message and return error accordingly.
 		if strings.Contains(err.Error(), "token is expired") {
@@ -269,7 +269,7 @@ func (s *UserService) AddEditor(ctx context.Context, token string) error {
 			return common.ErrDataNotFound
 		}
 	}
-	if err := s.dbstore.User.AddEditorById(ctx, user.Id, createrId); err != nil {
+	if err := s.dbstore.User.AddEditorById(ctx, creatorId, user.Id); err != nil {
 		return common.ErrIncorrectDataReceived
 	}
 	// Check if user id passed is same as current user id, if same return an error.

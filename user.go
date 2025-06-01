@@ -121,8 +121,8 @@ func (h *Handler) SendVerificationUser(ctx context.Context, in *pb.SendVerificat
 }
 
 func (h *Handler) AddEditorUser(ctx context.Context, in *pb.AddEditorUserRequest) (*pb.AddEditorUserResponse, error) {
-	userId := in.UserId
-	if err := h.grpcService.User.AddEditor(ctx, userId); err != nil {
+	token := in.Token
+	if err := h.grpcService.User.AddEditor(ctx, token); err != nil {
 		return nil, err
 	}
 	return &pb.AddEditorUserResponse{}, nil
